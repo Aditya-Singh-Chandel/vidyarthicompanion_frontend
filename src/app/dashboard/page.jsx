@@ -6,6 +6,7 @@ import CommunityConsensusWidget from '@/features/communityEngine/CommunityConsen
 import TransitWidget from '@/features/transitEngine/TransitWidget';
 import EmpathyWidget from '@/features/empathyMesh/EmpathyWidget';
 import SynergyWidget from '@/features/recommendationEngine/SynergyWidget';
+import PresenceTracker from '@/features/presenceEngine/PresenceTracker';
 import DailyTimeline from '@/components/DailyTimeline';
 
 const MOCK_TODAY_SCHEDULE = [
@@ -43,6 +44,9 @@ const MOCK_TODAY_SCHEDULE = [
 export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-gray-50 p-4 sm:p-8">
+      {/* The Silent GPS Engine */}
+      <PresenceTracker />
+
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
