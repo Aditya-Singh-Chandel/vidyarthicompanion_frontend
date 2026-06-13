@@ -1,11 +1,8 @@
 import React from 'react';
 import OverrideWidget from '@/features/overrideEngine/OverrideWidget';
-import ExpenseWidget from '@/features/pocketBuddy/ExpenseWidget';
 import RetrievalWidget from '@/features/retrievalEngine/RetrievalWidget';
-import CommunityConsensusWidget from '@/features/communityEngine/CommunityConsensusWidget';
 import TransitWidget from '@/features/transitEngine/TransitWidget';
 import EmpathyWidget from '@/features/empathyMesh/EmpathyWidget';
-import SynergyWidget from '@/features/recommendationEngine/SynergyWidget';
 import PresenceTracker from '@/features/presenceEngine/PresenceTracker';
 import DailyTimeline from '@/components/DailyTimeline';
 
@@ -44,19 +41,9 @@ const MOCK_TODAY_SCHEDULE = [
 export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-gray-50 p-4 sm:p-8">
-      {/* The Silent GPS Engine */}
       <PresenceTracker />
 
       <div className="mx-auto max-w-5xl">
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            CampusFlow
-          </h1>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">
-            S
-          </div>
-        </div>
-
         {/* The Brain: Ground-Truth Retrieval Engine */}
         <RetrievalWidget />
 
@@ -72,19 +59,16 @@ export default function DashboardPage() {
               Action Center
             </h2>
             <OverrideWidget />
-            <CommunityConsensusWidget />
-            <SynergyWidget />
           </section>
 
-          {/* Right Column: Financial & Wellness */}
-          <section aria-labelledby="financial-wellness-heading">
+          {/* Right Column: Wellness & Transit */}
+          <section aria-labelledby="wellness-transit-heading">
             <h2
-              id="financial-wellness-heading"
+              id="wellness-transit-heading"
               className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
             >
-              Financial & Wellness
+              Wellness & Transit
             </h2>
-            <ExpenseWidget />
             <EmpathyWidget />
             <TransitWidget />
           </section>

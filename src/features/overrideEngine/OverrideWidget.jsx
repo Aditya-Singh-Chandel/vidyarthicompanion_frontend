@@ -26,7 +26,9 @@ function formatIsoDate(isoString) {
 
 function OverrideWidget() {
   const [isUploading, setIsUploading] = useState(false);
-  const [responseData, setResponseData] = useState(null);
+  
+  // UPDATED: Now expecting an array of events
+  const [responseEvents, setResponseEvents] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   
   // 1. Add mounted state to fix hydration mismatch
@@ -45,29 +47,30 @@ function OverrideWidget() {
     if (!selectedImage) return;
 
     setIsUploading(true);
-    setResponseData(null); // Clear previous results
+    setResponseEvents([]); // Clear previous results
 
     // LIVE API CONNECTION
-    const result = await verifyScheduleOverride(selectedImage, "student_1");
+    const resultArray = await verifyScheduleOverride(selectedImage, "student_1");
+    console.log("Raw Array from Backend:", resultArray);
 
-    if (result) {
-      setResponseData({
-        ...result, // { eventName, date, location, confidenceScore } from User 3
-        systemAction: "AI Verification Complete. Safe-Skip active if needed." // Adding UI flair
-      });
+    if (resultArray && Array.isArray(resultArray)) {
+      setResponseEvents(resultArray);
+    } else if (resultArray && resultArray.events) {
+      // Fallback just in case User 3 nested it inside an 'events' key
+      setResponseEvents(resultArray.events);
     } else {
-      console.error("Backend did not return valid data.");
+      console.error("Backend did not return a valid array of events.");
     }
     
     setIsUploading(false);
   };
 
-  const handleVerify = () => {
-    console.log("Verified & Echoed:", responseData);
+  const handleVerify = (eventData) => {
+    console.log("Verified & Echoed:", eventData);
   };
 
-  const handleFlag = () => {
-    console.log("Flagged as error:", responseData);
+  const handleFlag = (eventData) => {
+    console.log("Flagged as error:", eventData);
   };
 
   // 2. Prevent rendering until the browser takes over
@@ -134,22 +137,25 @@ function OverrideWidget() {
               />
             </svg>
           )}
-          {isUploading ? "Processing via AWS Bedrock..." : "Verify Schedule Upload"}
+          {isUploading ? "Processing via Gemini AI..." : "Verify Schedule Upload"}
         </button>
       </div>
 
-      {/* Result */}
-      {responseData && (
-        <ZeroUiActionCard
-          eventName={responseData.eventName}
-          date={formatIsoDate(responseData.date)}
-          location={responseData.location}
-          confidenceScore={responseData.confidenceScore}
-          systemAction={responseData.systemAction}
-          onVerify={handleVerify}
-          onFlag={handleFlag}
-        />
-      )}
+      {/* Render Multiple Results if Syllabus Uploaded */}
+      <div className="space-y-4">
+        {responseEvents.map((event, index) => (
+          <ZeroUiActionCard
+            key={index}
+            eventName={event.eventName || "Unknown Event"}
+            date={formatIsoDate(event.date || new Date().toISOString())}
+            location={event.location || "TBD"}
+            confidenceScore={event.confidenceScore || 0}
+            systemAction="AI Verification Complete. Safe-Skip active if needed."
+            onVerify={() => handleVerify(event)}
+            onFlag={() => handleFlag(event)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
