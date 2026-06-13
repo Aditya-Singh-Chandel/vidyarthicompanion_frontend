@@ -1,13 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Sparkles, ArrowRight } from 'lucide-react';
-import { askCampusFlow } from './retrievalApi';
+// import { askCampusFlow } from './retrievalApi';
 
 export default function RetrievalWidget() {
   const [query, setQuery] = useState('');
   const [isAsking, setIsAsking] = useState(false);
   const [answer, setAnswer] = useState(null);
+  
+  // 1. Add a mounted state to prevent hydration mismatches
+  const [isMounted, setIsMounted] = useState(false);
+
+  // 2. Set it to true only after the browser takes over
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -17,14 +25,16 @@ export default function RetrievalWidget() {
     setAnswer(null);
 
     // MOCKING THE DELAY AND RESPONSE FOR NOW
-    // Once User 3 finishes Bedrock intent-matching, swap this setTimeout 
-    // with: const res = await askCampusFlow(query, 'student_123');
-    
     setTimeout(() => {
       setAnswer("Based on the community graph and your calendar, your next class is Data Structures & Algorithms in Lecture Hall 4. You have exactly 45 minutes, which is enough time to grab a coffee at the Campus Cafe within your $45.00 budget.");
       setIsAsking(false);
     }, 1500);
   };
+
+  // 3. Prevent rendering the UI until mounted to avoid the error
+  if (!isMounted) {
+    return <div className="h-[72px] w-full mb-10" />; // Empty placeholder to prevent layout shift
+  }
 
   return (
     <div className="w-full mb-10">
@@ -39,7 +49,7 @@ export default function RetrievalWidget() {
         />
         <button
           type="submit"
-          disabled={isAsking || !query.trim()}
+          disabled={isAsking || query.trim() === ''}
           className="absolute right-2 flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition-all"
         >
           {isAsking ? (

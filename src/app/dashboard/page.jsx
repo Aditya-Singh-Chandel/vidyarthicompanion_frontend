@@ -2,6 +2,8 @@ import React from 'react';
 import OverrideWidget from '@/features/overrideEngine/OverrideWidget';
 import ExpenseWidget from '@/features/pocketBuddy/ExpenseWidget';
 import RetrievalWidget from '@/features/retrievalEngine/RetrievalWidget';
+import CommunityConsensusWidget from '@/features/communityEngine/CommunityConsensusWidget';
+import TransitWidget from '@/features/transitEngine/TransitWidget';
 import DailyTimeline from '@/components/DailyTimeline';
 
 const MOCK_TODAY_SCHEDULE = [
@@ -54,7 +56,9 @@ export default function DashboardPage() {
 
         {/* Top Grid: Urgent Actions & Interventions */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-          <section aria-labelledby="action-center-heading">
+          
+          {/* Left Column: Action Center */}
+          <section aria-labelledby="action-center-heading" className="flex flex-col">
             <h2
               id="action-center-heading"
               className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
@@ -62,8 +66,10 @@ export default function DashboardPage() {
               Action Center
             </h2>
             <OverrideWidget />
+            <CommunityConsensusWidget />
           </section>
 
+          {/* Right Column: Financial & Wellness */}
           <section aria-labelledby="financial-wellness-heading">
             <h2
               id="financial-wellness-heading"
@@ -72,6 +78,7 @@ export default function DashboardPage() {
               Financial & Wellness
             </h2>
             <ExpenseWidget />
+            <TransitWidget />
           </section>
         </div>
 
