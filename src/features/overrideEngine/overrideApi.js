@@ -33,17 +33,19 @@ function fileToBase64(file) {
  * @param {string} userId - The current user's identifier.
  * @returns {Promise<object|null>} The API response data, or null on failure.
  */
-export async function verifyScheduleOverride(file, userId) {
+export async function verifyScheduleOverride(file, userId = "student_1") {
   try {
     const imageString = await fileToBase64(file);
 
     const payload = {
       userId,
-      eventType: "academic_override",
+      eventType: "academic", // Updated to match User 2's exact backend contract
       imageString,
     };
 
     const response = await axios.post(VERIFY_ENDPOINT, payload);
+    
+    // User 3's Bedrock logic will return the data object directly inside the response
     return response.data;
   } catch (error) {
     console.error("verifyScheduleOverride failed:", error);

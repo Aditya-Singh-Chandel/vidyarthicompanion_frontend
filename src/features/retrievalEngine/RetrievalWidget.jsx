@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Sparkles, ArrowRight } from 'lucide-react';
-// import { askCampusFlow } from './retrievalApi';
+import { askCampusFlow } from './retrievalApi';
 
 export default function RetrievalWidget() {
   const [query, setQuery] = useState('');
@@ -24,11 +24,11 @@ export default function RetrievalWidget() {
     setIsAsking(true);
     setAnswer(null);
 
-    // MOCKING THE DELAY AND RESPONSE FOR NOW
-    setTimeout(() => {
-      setAnswer("Based on the community graph and your calendar, your next class is Data Structures & Algorithms in Lecture Hall 4. You have exactly 45 minutes, which is enough time to grab a coffee at the Campus Cafe within your $45.00 budget.");
-      setIsAsking(false);
-    }, 1500);
+    // LIVE AI CONNECTION
+    const result = await askCampusFlow(query, "student_1");
+    
+    setAnswer(result);
+    setIsAsking(false);
   };
 
   // 3. Prevent rendering the UI until mounted to avoid the error

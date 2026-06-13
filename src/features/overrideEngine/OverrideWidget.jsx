@@ -1,15 +1,9 @@
 'use client'; // Required for Next.js App Router since we use state
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ZeroUiActionCard from "../../components/ZeroUiActionCard";
+import { verifyScheduleOverride } from "./overrideApi";
 
-const MOCK_RESPONSE_DATA = {
-  eventName: "CS301 Midterm",
-  date: "2026-06-15T09:00:00.000Z",
-  location: "Room 402",
-  confidenceScore: 0.98,
-  systemAction: "Routines paused. Safe-Skip activated."
-};
 /**
  * Format an ISO date string into a readable, human-friendly label.
  * Falls back to the raw value if it can't be parsed.
@@ -32,32 +26,54 @@ function formatIsoDate(isoString) {
 
 function OverrideWidget() {
   const [isUploading, setIsUploading] = useState(false);
-  const [mockResponseData, setMockResponseData] = useState(null);
+  const [responseData, setResponseData] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  
+  // 1. Add mounted state to fix hydration mismatch
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0] ?? null;
     setSelectedImage(file);
   };
 
-  const handleSimulateApiCall = () => {
-    setIsUploading(true);
-    // Clear any previous result while the new "request" is in flight.
-    setMockResponseData(null);
+  const handleApiCall = async () => {
+    if (!selectedImage) return;
 
-    setTimeout(() => {
-      setMockResponseData(MOCK_RESPONSE_DATA);
-      setIsUploading(false);
-    }, 2000);
+    setIsUploading(true);
+    setResponseData(null); // Clear previous results
+
+    // LIVE API CONNECTION
+    const result = await verifyScheduleOverride(selectedImage, "student_1");
+
+    if (result) {
+      setResponseData({
+        ...result, // { eventName, date, location, confidenceScore } from User 3
+        systemAction: "AI Verification Complete. Safe-Skip active if needed." // Adding UI flair
+      });
+    } else {
+      console.error("Backend did not return valid data.");
+    }
+    
+    setIsUploading(false);
   };
 
   const handleVerify = () => {
-    console.log("Verified & Echoed:", mockResponseData);
+    console.log("Verified & Echoed:", responseData);
   };
 
   const handleFlag = () => {
-    console.log("Flagged as error:", mockResponseData);
+    console.log("Flagged as error:", responseData);
   };
+
+  // 2. Prevent rendering until the browser takes over
+  if (!isMounted) {
+    return <div className="mx-auto w-full max-w-md h-[250px] p-6" />;
+  }
 
   return (
     <div className="mx-auto w-full max-w-md space-y-6 p-6">
@@ -92,8 +108,8 @@ function OverrideWidget() {
 
         <button
           type="button"
-          onClick={handleSimulateApiCall}
-          disabled={isUploading}
+          onClick={handleApiCall}
+          disabled={isUploading || !selectedImage}
           className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isUploading && (
@@ -118,18 +134,18 @@ function OverrideWidget() {
               />
             </svg>
           )}
-          {isUploading ? "Processing..." : "Simulate API Call"}
+          {isUploading ? "Processing via AWS Bedrock..." : "Verify Schedule Upload"}
         </button>
       </div>
 
       {/* Result */}
-      {mockResponseData && (
+      {responseData && (
         <ZeroUiActionCard
-          eventName={mockResponseData.eventName}
-          date={formatIsoDate(mockResponseData.date)}
-          location={mockResponseData.location}
-          confidenceScore={mockResponseData.confidenceScore}
-          systemAction={mockResponseData.systemAction}
+          eventName={responseData.eventName}
+          date={formatIsoDate(responseData.date)}
+          location={responseData.location}
+          confidenceScore={responseData.confidenceScore}
+          systemAction={responseData.systemAction}
           onVerify={handleVerify}
           onFlag={handleFlag}
         />

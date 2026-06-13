@@ -4,6 +4,8 @@ import ExpenseWidget from '@/features/pocketBuddy/ExpenseWidget';
 import RetrievalWidget from '@/features/retrievalEngine/RetrievalWidget';
 import CommunityConsensusWidget from '@/features/communityEngine/CommunityConsensusWidget';
 import TransitWidget from '@/features/transitEngine/TransitWidget';
+import EmpathyWidget from '@/features/empathyMesh/EmpathyWidget';
+import SynergyWidget from '@/features/recommendationEngine/SynergyWidget';
 import DailyTimeline from '@/components/DailyTimeline';
 
 const MOCK_TODAY_SCHEDULE = [
@@ -67,6 +69,7 @@ export default function DashboardPage() {
             </h2>
             <OverrideWidget />
             <CommunityConsensusWidget />
+            <SynergyWidget />
           </section>
 
           {/* Right Column: Financial & Wellness */}
@@ -78,6 +81,7 @@ export default function DashboardPage() {
               Financial & Wellness
             </h2>
             <ExpenseWidget />
+            <EmpathyWidget />
             <TransitWidget />
           </section>
         </div>
