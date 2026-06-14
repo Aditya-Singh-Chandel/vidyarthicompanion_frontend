@@ -1,42 +1,75 @@
 'use client';
 
-import React, { useState } from 'react';
-import { MessageSquareWarning, ThumbsUp, ThumbsDown, CheckCircle2 } from 'lucide-react';
-import { submitConsensusVote } from './communityApi';
+import React, { useState, useEffect } from 'react';
+import { MessageSquareWarning, ThumbsUp, ThumbsDown, CheckCircle2, Loader2 } from 'lucide-react';
+import { submitConsensusVote, getAlerts } from './communityApi';
 
 export default function CommunityConsensusWidget() {
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Hardcoded for MVP. Later, this comes from the database.
-  const activeAlert = {
-    id: 'event_mess_123',
-    message: 'Main Mess is currently overcrowded and food quality is flagged. Recommendation: Outside Dining.',
-    nodeType: 'Wellness Community'
-  };
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const alerts = await getAlerts();
+      if (cancelled) return;
+      setAlert(alerts[0] || null);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleVote = async (voteValue) => {
+    if (!alert) return;
     setIsSubmitting(true);
-    
-    // Fire the vote to User 2's backend
-    await submitConsensusVote(activeAlert.id, voteValue);
-    
+    const result = await submitConsensusVote(alert.id, voteValue);
+    if (result?.data) {
+      setAlert((prev) => ({ ...prev, upvotes: result.data.upvotes, downvotes: result.data.downvotes }));
+    }
     setHasVoted(true);
     setIsSubmitting(false);
   };
 
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading community alerts…
+        </div>
+      </div>
+    );
+  }
+
+  if (!alert) {
+    return (
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-emerald-800">
+          Community Status
+        </h3>
+        <p className="mt-1 text-sm text-emerald-900">No active alerts right now. All clear.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-5 shadow-sm transition-all mt-6">
+    <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-5 shadow-sm transition-all">
       <div className="flex items-start gap-3">
         <MessageSquareWarning className="h-5 w-5 shrink-0 text-yellow-600 mt-0.5" />
         <div className="flex-1">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-yellow-800">
-            Live Community Alert
-          </h3>
-          <p className="mt-1 text-sm font-medium text-yellow-900">
-            {activeAlert.message}
-          </p>
-          
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-yellow-800">
+              Live Community Alert
+            </h3>
+            <span className="text-xs font-semibold text-yellow-700">
+              +{alert.upvotes ?? 0} / -{alert.downvotes ?? 0}
+            </span>
+          </div>
+          <p className="mt-1 text-sm font-medium text-yellow-900">{alert.message}</p>
+
           {!hasVoted ? (
             <div className="mt-4 flex flex-col sm:flex-row gap-3">
               <button
