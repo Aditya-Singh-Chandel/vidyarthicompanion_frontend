@@ -33,6 +33,8 @@ function OverrideWidget() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [myNodes, setMyNodes] = useState([]);
   const [shareNodeId, setShareNodeId] = useState(""); // "" = personal
+  const [inputMethod, setInputMethod] = useState("upload"); // 'upload' | 'paste'
+  const [pasteError, setPasteError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +50,48 @@ function OverrideWidget() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0] ?? null;
     setSelectedImage(file);
+  };
+
+  // Capture a pasted image (Ctrl/Cmd+V) into the paste area.
+  const handlePaste = (event) => {
+    setPasteError(null);
+    const items = event.clipboardData?.items || [];
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        const blob = item.getAsFile();
+        if (blob) {
+          const ext = (blob.type.split("/")[1] || "png").split("+")[0];
+          setSelectedImage(new File([blob], `pasted-image.${ext}`, { type: blob.type }));
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+    setPasteError("No image found in the paste. Copy an image first, then paste here.");
+  };
+
+  // Read an image directly from the clipboard via the async Clipboard API.
+  const handleClipboardRead = async () => {
+    setPasteError(null);
+    try {
+      if (!navigator.clipboard?.read) {
+        setPasteError("Clipboard access isn't available in this browser. Use Ctrl/Cmd+V instead.");
+        return;
+      }
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imgType = item.types.find((t) => t.startsWith("image/"));
+        if (imgType) {
+          const blob = await item.getType(imgType);
+          const ext = (imgType.split("/")[1] || "png").split("+")[0];
+          setSelectedImage(new File([blob], `pasted-image.${ext}`, { type: imgType }));
+          return;
+        }
+      }
+      setPasteError("No image found in the clipboard.");
+    } catch {
+      setPasteError("Couldn't read the clipboard. Use Ctrl/Cmd+V instead.");
+    }
   };
 
   const handleApiCall = async () => {
@@ -86,30 +130,70 @@ function OverrideWidget() {
       <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-bold text-gray-900">Override Engine</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Upload a schedule image and run the detection pipeline.
+          Upload or paste a schedule (image, PDF, CSV, or ICS) and run the detection pipeline.
         </p>
 
+        {/* Input method selector */}
         <div className="mt-5">
-          <label
-            htmlFor="override-image"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Schedule image
+          <label htmlFor="input-method" className="block text-sm font-medium text-gray-700">
+            Input method
           </label>
-          <input
-            id="override-image"
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
+          <select
+            id="input-method"
+            value={inputMethod}
+            onChange={(e) => {
+              setInputMethod(e.target.value);
+              setPasteError(null);
+            }}
             disabled={isUploading}
-            className="mt-2 block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-60"
-          />
-          {selectedImage && (
-            <p className="mt-2 truncate text-xs text-gray-500">
-              Selected: {selectedImage.name}
-            </p>
-          )}
+            className="mt-2 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none disabled:opacity-60"
+          >
+            <option value="upload">Upload a file</option>
+            <option value="paste">Copy / paste an image</option>
+          </select>
         </div>
+
+        {inputMethod === "upload" ? (
+          <div className="mt-4">
+            <label htmlFor="override-image" className="block text-sm font-medium text-gray-700">
+              Schedule file
+            </label>
+            <input
+              id="override-image"
+              type="file"
+              accept="image/*,application/pdf,.csv,.ics,text/calendar,text/csv"
+              onChange={handleImageChange}
+              disabled={isUploading}
+              className="mt-2 block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-100 disabled:opacity-60"
+            />
+            <p className="mt-1 text-xs text-gray-400">Supported: images, PDF, CSV, ICS.</p>
+          </div>
+        ) : (
+          <div className="mt-4">
+            <span className="block text-sm font-medium text-gray-700">Paste an image</span>
+            <div
+              role="textbox"
+              tabIndex={0}
+              onPaste={handlePaste}
+              className="mt-2 flex min-h-[88px] cursor-text items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-center text-xs text-gray-500 focus:border-indigo-400 focus:outline-none"
+            >
+              Click here and press <span className="mx-1 font-semibold">Ctrl/Cmd + V</span> to paste a copied image.
+            </div>
+            <button
+              type="button"
+              onClick={handleClipboardRead}
+              disabled={isUploading}
+              className="mt-2 inline-flex items-center gap-1 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-60"
+            >
+              Paste from clipboard
+            </button>
+            {pasteError && <p className="mt-1 text-xs text-red-500">{pasteError}</p>}
+          </div>
+        )}
+
+        {selectedImage && (
+          <p className="mt-2 truncate text-xs text-gray-500">Selected: {selectedImage.name}</p>
+        )}
 
         {/* Share-with-node selector */}
         <div className="mt-4">

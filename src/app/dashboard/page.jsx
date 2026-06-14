@@ -6,6 +6,7 @@ import EmpathyWidget from '@/features/empathyMesh/EmpathyWidget';
 import PresenceTracker from '@/features/presenceEngine/PresenceTracker';
 import MasterCalendar from '@/components/MasterCalendar';
 import DailyPlanWidget from '@/features/routineEngine/DailyPlanWidget';
+import NotificationsWidget from '@/features/routineEngine/NotificationsWidget';
 
 export default function DashboardPage() {
   return (
@@ -41,9 +42,12 @@ export default function DashboardPage() {
               id="wellness-transit-heading"
               className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
             >
-              Wellness & Transit
+              Notifications, Wellness & Transit
             </h2>
-            <EmpathyWidget />
+            <NotificationsWidget />
+            <div className="mt-8">
+              <EmpathyWidget />
+            </div>
             <TransitWidget />
           </section>
         </div>
