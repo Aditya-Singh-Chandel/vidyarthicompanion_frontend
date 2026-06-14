@@ -5,6 +5,7 @@ import TransitWidget from '@/features/transitEngine/TransitWidget';
 import EmpathyWidget from '@/features/empathyMesh/EmpathyWidget';
 import PresenceTracker from '@/features/presenceEngine/PresenceTracker';
 import MasterCalendar from '@/components/MasterCalendar';
+import DailyPlanWidget from '@/features/routineEngine/DailyPlanWidget';
 
 export default function DashboardPage() {
   return (
@@ -14,6 +15,11 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-5xl">
         {/* The Brain: Ground-Truth Retrieval Engine */}
         <RetrievalWidget />
+
+        {/* The Orchestrator: prioritized daily plan */}
+        <div className="mb-8">
+          <DailyPlanWidget />
+        </div>
 
         {/* Top Grid: Urgent Actions & Interventions */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
