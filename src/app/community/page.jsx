@@ -1,6 +1,7 @@
 import React from 'react';
 import CommunityConsensusWidget from '@/features/communityEngine/CommunityConsensusWidget';
 import ScheduleConsensusWidget from '@/features/communityEngine/ScheduleConsensusWidget';
+import NodesWidget from '@/features/communityEngine/NodesWidget';
 import SynergyWidget from '@/features/recommendationEngine/SynergyWidget';
 
 export default function CommunityPage() {
@@ -33,14 +34,22 @@ export default function CommunityPage() {
         </div>
 
         {/* Trust-weighted schedule verification lifecycle */}
-        <section aria-labelledby="schedule-consensus-heading" className="mt-8">
-          <h2
-            id="schedule-consensus-heading"
-            className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
-          >
-            Schedule Verification
-          </h2>
-          <ScheduleConsensusWidget />
+        <section aria-labelledby="schedule-consensus-heading" className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div>
+            <h2
+              id="schedule-consensus-heading"
+              className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
+            >
+              Schedule Verification
+            </h2>
+            <ScheduleConsensusWidget />
+          </div>
+          <div>
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
+              Your Communities
+            </h2>
+            <NodesWidget />
+          </div>
         </section>
       </div>
     </div>

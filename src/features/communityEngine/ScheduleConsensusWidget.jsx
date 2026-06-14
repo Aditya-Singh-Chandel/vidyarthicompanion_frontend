@@ -105,6 +105,9 @@ export default function ScheduleConsensusWidget() {
                   <p className="text-xs text-gray-500">
                     {formatWhen(ev.date)} · {ev.location}
                   </p>
+                  <span className="mt-1 inline-block rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                    {ev.nodeName || 'Personal'}
+                  </span>
                 </div>
                 <StatusBadge status={ev.status} />
               </div>

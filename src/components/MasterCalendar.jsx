@@ -1,57 +1,85 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import DailyTimeline from './DailyTimeline';
+import { getScheduleEvents } from '@/features/communityEngine/communityApi';
 
-// Mock Data indexed by date string (YYYY-MM-DD)
-const MOCK_EVENTS = {
-  '2026-06-14': [
-    { id: '1', title: 'Data Structures & Algorithms', time: '10:00 AM - 11:30 AM', location: 'Lecture Hall 4', type: 'academic' },
-    { id: '2', title: 'Lunch at Main Mess', time: '12:30 PM - 1:15 PM', location: 'Campus Mess Block B', type: 'wellness', isFlagged: true },
-    { id: '3', title: 'Hackathon Sync', time: '3:00 PM - 4:00 PM', location: 'Library Group Room 2', type: 'community' },
-  ],
-  '2026-06-15': [
-    { id: '4', title: 'OS Class Reschedule', time: '3:00 PM - 4:30 PM', location: 'TBD', type: 'academic' },
-    { id: '5', title: 'Evening Walk (Burnout Alert)', time: '6:00 PM - 6:30 PM', location: 'Campus Track', type: 'wellness' },
-  ],
-  '2026-06-18': [
-    { id: '6', title: 'DBMS Midterm', time: '9:00 AM - 12:00 PM', location: 'Exam Hall A', type: 'academic' },
-  ]
-};
+/** Local YYYY-MM-DD key for a Date (avoids UTC off-by-one). */
+function dateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate()
+  ).padStart(2, '0')}`;
+}
+
+/** Map a backend event into the DailyTimeline shape. */
+function toTimelineItem(ev) {
+  const d = new Date(ev.date);
+  const time = Number.isNaN(d.getTime())
+    ? 'Time TBD'
+    : d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return {
+    id: ev.id,
+    title: ev.eventName,
+    time,
+    location: ev.location || 'TBD',
+    type: 'academic',
+    isFlagged: ev.status === 'pending',
+  };
+}
 
 export default function MasterCalendar() {
-  // Defaulting to June 2026 for the Hackathon context
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 5, 14)); 
-  const [selectedDate, setSelectedDate] = useState('2026-06-14');
+  const today = useMemo(() => new Date(), []);
+  const [currentDate, setCurrentDate] = useState(() => new Date());
+  const [selectedDate, setSelectedDate] = useState(() => dateKey(new Date()));
+  const [loading, setLoading] = useState(true);
+  const [eventsByDate, setEventsByDate] = useState({});
 
-  // Helper to get days in a month for the grid
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const events = await getScheduleEvents();
+      if (cancelled) return;
+      const grouped = {};
+      for (const ev of events) {
+        const d = new Date(ev.date);
+        if (Number.isNaN(d.getTime())) continue;
+        const key = dateKey(d);
+        (grouped[key] = grouped[key] || []).push(toTimelineItem(ev));
+      }
+      setEventsByDate(grouped);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
 
   const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
   const startingDay = getFirstDayOfMonth(currentDate.getFullYear(), currentDate.getMonth());
 
-  // Generate grid cells
   const days = [];
-  for (let i = 0; i < startingDay; i++) {
-    days.push(null); // Empty slots before the 1st
-  }
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push(i);
-  }
+  for (let i = 0; i < startingDay; i++) days.push(null);
+  for (let i = 1; i <= daysInMonth; i++) days.push(i);
+
+  const cellKey = (day) =>
+    `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(
+      day
+    ).padStart(2, '0')}`;
 
   const handleDateClick = (day) => {
     if (!day) return;
-    const formattedDate = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    setSelectedDate(formattedDate);
+    setSelectedDate(cellKey(day));
   };
 
-  const selectedEvents = MOCK_EVENTS[selectedDate] || [];
+  const selectedEvents = eventsByDate[selectedDate] || [];
+  const todayKey = dateKey(today);
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[600px]">
-      
       {/* Left Pane: The Monthly Grid */}
       <div className="w-full md:w-1/2 lg:w-2/5 border-b md:border-b-0 md:border-r border-gray-100 p-6 bg-gray-50/50">
         <div className="flex items-center justify-between mb-6">
@@ -60,13 +88,13 @@ export default function MasterCalendar() {
             {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
           </h2>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
               className="p-1.5 rounded-md hover:bg-gray-200 transition-colors text-gray-600"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <button 
+            <button
               onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
               className="p-1.5 rounded-md hover:bg-gray-200 transition-colors text-gray-600"
             >
@@ -75,21 +103,20 @@ export default function MasterCalendar() {
           </div>
         </div>
 
-        {/* Days of Week Header */}
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
+          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
             <div key={day} className="text-center text-xs font-semibold text-gray-400 uppercase py-2">
               {day}
             </div>
           ))}
         </div>
 
-        {/* Calendar Grid */}
         <div className="grid grid-cols-7 gap-1">
           {days.map((day, index) => {
-            const formattedDate = day ? `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null;
-            const hasEvents = formattedDate && MOCK_EVENTS[formattedDate];
+            const formattedDate = day ? cellKey(day) : null;
+            const hasEvents = formattedDate && eventsByDate[formattedDate];
             const isSelected = formattedDate === selectedDate;
+            const isToday = formattedDate === todayKey;
 
             return (
               <div key={index} className="aspect-square p-0.5">
@@ -97,13 +124,14 @@ export default function MasterCalendar() {
                   <button
                     onClick={() => handleDateClick(day)}
                     className={`w-full h-full flex flex-col items-center justify-center rounded-lg text-sm font-medium transition-all relative ${
-                      isSelected 
-                        ? 'bg-indigo-600 text-white shadow-md' 
+                      isSelected
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : isToday
+                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                         : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 bg-white border border-gray-100 shadow-sm'
                     }`}
                   >
                     {day}
-                    {/* Event Dots Indicator */}
                     {hasEvents && (
                       <div className="absolute bottom-1.5 flex gap-0.5">
                         <span className={`h-1 w-1 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-400'}`}></span>
@@ -122,15 +150,21 @@ export default function MasterCalendar() {
       {/* Right Pane: The Daily Timeline */}
       <div className="flex-1 p-6 bg-white overflow-y-auto">
         <div className="mb-6 border-b border-gray-100 pb-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
-            Schedule for
-          </h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Schedule for</h3>
           <p className="text-2xl font-black tracking-tight text-gray-900 mt-1">
-            {new Date(selectedDate).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+            {new Date(`${selectedDate}T00:00:00`).toLocaleDateString(undefined, {
+              weekday: 'long',
+              month: 'long',
+              day: 'numeric',
+            })}
           </p>
         </div>
 
-        {selectedEvents.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center gap-2 py-10 text-sm text-gray-400">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading your schedule…
+          </div>
+        ) : selectedEvents.length > 0 ? (
           <DailyTimeline schedule={selectedEvents} />
         ) : (
           <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -138,7 +172,7 @@ export default function MasterCalendar() {
               <CalendarIcon className="h-6 w-6 text-gray-300" />
             </div>
             <p className="text-sm font-medium text-gray-900">No scheduled events</p>
-            <p className="text-xs text-gray-500 mt-1">Enjoy your free time or add a new task.</p>
+            <p className="text-xs text-gray-500 mt-1">Upload a timetable via the Override Engine.</p>
           </div>
         )}
       </div>

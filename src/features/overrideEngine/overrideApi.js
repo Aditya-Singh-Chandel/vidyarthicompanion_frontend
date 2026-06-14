@@ -29,15 +29,17 @@ function fileToBase64(file) {
  * userId is derived server-side from the JWT.
  *
  * @param {File} file - Raw File object from a file input.
+ * @param {string|null} [nodeId] - Optional community node to share the events with.
  * @returns {Promise<Array|null>} The API response data array, or null on failure.
  */
-export async function verifyScheduleOverride(file) {
+export async function verifyScheduleOverride(file, nodeId = null) {
   try {
     const imageString = await fileToBase64(file);
 
     const payload = {
       eventType: "academic",
       imageString,
+      nodeId: nodeId || null,
     };
 
     const response = await apiClient.post("/overrides/verify", payload);
