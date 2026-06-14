@@ -29,7 +29,7 @@ function ExpenseWidget() {
     setSpendAlert(null);
     try {
       // Fire the backend webhook. Resolves to response data or null on failure.
-      const result = await simulateTransaction("student_123", 5.0);
+      const result = await simulateTransaction(5.0);
 
       if (result?.success && typeof result.data?.newBalance === "number") {
         // Authoritative balance returned by the backend ledger.

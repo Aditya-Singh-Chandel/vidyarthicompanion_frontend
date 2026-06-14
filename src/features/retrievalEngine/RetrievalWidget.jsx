@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, Sparkles, ArrowRight } from 'lucide-react';
 import { askCampusFlow } from './retrievalApi';
 
@@ -8,14 +8,6 @@ export default function RetrievalWidget() {
   const [query, setQuery] = useState('');
   const [isAsking, setIsAsking] = useState(false);
   const [answer, setAnswer] = useState(null);
-  
-  // 1. Add a mounted state to prevent hydration mismatches
-  const [isMounted, setIsMounted] = useState(false);
-
-  // 2. Set it to true only after the browser takes over
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -25,16 +17,11 @@ export default function RetrievalWidget() {
     setAnswer(null);
 
     // LIVE AI CONNECTION
-    const result = await askCampusFlow(query, "student_1");
-    
+    const result = await askCampusFlow(query);
+
     setAnswer(result);
     setIsAsking(false);
   };
-
-  // 3. Prevent rendering the UI until mounted to avoid the error
-  if (!isMounted) {
-    return <div className="h-[72px] w-full mb-10" />; // Empty placeholder to prevent layout shift
-  }
 
   return (
     <div className="w-full mb-10">

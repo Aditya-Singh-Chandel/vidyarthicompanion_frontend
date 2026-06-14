@@ -5,8 +5,6 @@ import { HeartHandshake, ShieldAlert, BookX, HeartPulse, Loader2 } from 'lucide-
 import useRoutineStore from '@/routineState/useRoutineStore';
 import { evaluateSafeSkip } from './empathyApi';
 
-const USER_ID = 'student_1';
-
 export default function EmpathyWidget() {
   const triggerSafeSkip = useRoutineStore((state) => state.triggerSafeSkip);
 
@@ -18,7 +16,7 @@ export default function EmpathyWidget() {
     let cancelled = false;
 
     (async () => {
-      const data = await evaluateSafeSkip(USER_ID);
+      const data = await evaluateSafeSkip();
       if (cancelled) return;
       setEvaluation(data);
       setLoading(false);

@@ -1,6 +1,4 @@
-import axios from "axios";
-
-const VERIFY_ENDPOINT = "http://localhost:5000/api/v1/overrides/verify";
+import apiClient from "@/lib/apiClient";
 
 /**
  * Read a File object and resolve with its Data URL (Base64-encoded string).
@@ -28,24 +26,23 @@ function fileToBase64(file) {
 
 /**
  * Upload a schedule image for academic-override verification.
+ * userId is derived server-side from the JWT.
  *
  * @param {File} file - Raw File object from a file input.
- * @param {string} userId - The current user's identifier.
  * @returns {Promise<Array|null>} The API response data array, or null on failure.
  */
-export async function verifyScheduleOverride(file, userId = "student_1") {
+export async function verifyScheduleOverride(file) {
   try {
     const imageString = await fileToBase64(file);
 
     const payload = {
-      userId,
-      eventType: "academic", // Updated to match User 2's exact backend contract
+      eventType: "academic",
       imageString,
     };
 
-    const response = await axios.post(VERIFY_ENDPOINT, payload);
-    
-    // User 3's backend returns the array inside response.data.data
+    const response = await apiClient.post("/overrides/verify", payload);
+
+    // Backend returns the array inside response.data.data
     return response.data.data || [];
   } catch (error) {
     console.error("verifyScheduleOverride failed:", error);

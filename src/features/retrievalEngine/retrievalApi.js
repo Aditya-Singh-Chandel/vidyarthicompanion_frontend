@@ -1,10 +1,9 @@
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 
-const RETRIEVAL_ENDPOINT = "http://localhost:5000/api/v1/retrieval/ask";
-
-export async function askCampusFlow(query, userId = "student_123") {
+export async function askCampusFlow(query) {
   try {
-    const response = await axios.post(RETRIEVAL_ENDPOINT, { query, userId });
+    // userId is derived server-side from the JWT.
+    const response = await apiClient.post("/retrieval/ask", { query });
     return response.data.data.answer;
   } catch (error) {
     console.error("Retrieval failed:", error);

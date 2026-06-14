@@ -1,6 +1,6 @@
 'use client'; // Required for Next.js App Router since we use state
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ZeroUiActionCard from "../../components/ZeroUiActionCard";
 import { verifyScheduleOverride } from "./overrideApi";
 
@@ -30,13 +30,6 @@ function OverrideWidget() {
   // UPDATED: Now expecting an array of events
   const [responseEvents, setResponseEvents] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
-  
-  // 1. Add mounted state to fix hydration mismatch
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0] ?? null;
@@ -50,7 +43,7 @@ function OverrideWidget() {
     setResponseEvents([]); // Clear previous results
 
     // LIVE API CONNECTION
-    const resultArray = await verifyScheduleOverride(selectedImage, "student_1");
+    const resultArray = await verifyScheduleOverride(selectedImage);
     console.log("Raw Array from Backend:", resultArray);
 
     if (resultArray && Array.isArray(resultArray)) {
@@ -72,11 +65,6 @@ function OverrideWidget() {
   const handleFlag = (eventData) => {
     console.log("Flagged as error:", eventData);
   };
-
-  // 2. Prevent rendering until the browser takes over
-  if (!isMounted) {
-    return <div className="mx-auto w-full max-w-md h-[250px] p-6" />;
-  }
 
   return (
     <div className="mx-auto w-full max-w-md space-y-6 p-6">

@@ -19,7 +19,7 @@ export default function CommunityConsensusWidget() {
     setIsSubmitting(true);
     
     // Fire the vote to User 2's backend
-    await submitConsensusVote(activeAlert.id, voteValue, 'student_123');
+    await submitConsensusVote(activeAlert.id, voteValue);
     
     setHasVoted(true);
     setIsSubmitting(false);

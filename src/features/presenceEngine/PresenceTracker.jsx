@@ -16,7 +16,7 @@ export default function PresenceTracker() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          pingPresence(latitude, longitude, "student_1");
+          pingPresence(latitude, longitude);
         },
         (error) => {
           console.warn("Location access denied or unavailable:", error.message);

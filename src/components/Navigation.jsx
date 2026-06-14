@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Users, Wallet, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '@/features/authEngine/AuthContext';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -12,8 +13,25 @@ const navItems = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
+const ROLE_LABELS = {
+  student: 'Student',
+  cr: 'Class Representative',
+  admin: 'Administrator',
+};
+
 export default function Navigation() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
+
+  const handleSignOut = () => {
+    logout();
+    router.replace('/login');
+  };
+
+  const displayName = user?.name || 'Student';
+  const initial = displayName.charAt(0).toUpperCase();
+  const roleLabel = ROLE_LABELS[user?.role] || 'Student';
 
   return (
     <div className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white shadow-sm z-50 relative">
@@ -52,18 +70,21 @@ export default function Navigation() {
 
         {/* User Profile Section */}
         <div className="mt-auto pt-6">
-          <button className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 transition-all mb-2">
+          <button
+            onClick={handleSignOut}
+            className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 transition-all mb-2"
+          >
             <LogOut className="h-5 w-5 shrink-0 text-gray-400 group-hover:text-red-600 transition-colors" />
             Sign Out
           </button>
-          
+
           <div className="flex items-center gap-3 rounded-xl bg-gray-50 p-3 ring-1 ring-inset ring-gray-200">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold shadow-sm">
-              S
+              {initial}
             </div>
             <div className="flex flex-col truncate">
-              <span className="text-sm font-bold text-gray-900 truncate">Soneesh</span>
-              <span className="text-xs text-gray-500 truncate">B.Tech CSE</span>
+              <span className="text-sm font-bold text-gray-900 truncate">{displayName}</span>
+              <span className="text-xs text-gray-500 truncate">{roleLabel}</span>
             </div>
           </div>
         </div>

@@ -1,16 +1,12 @@
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 
-const VOTE_ENDPOINT = "http://localhost:5000/api/v1/community/vote";
-
-export async function submitConsensusVote(eventId, voteType, userId) {
+export async function submitConsensusVote(eventId, voteType) {
   try {
-    const payload = {
+    // Voter identity is derived server-side from the JWT.
+    const response = await apiClient.post("/community/vote", {
       eventId,
       voteType, // 1 for Echo, -1 for Flag
-      userId
-    };
-    
-    const response = await axios.post(VOTE_ENDPOINT, payload);
+    });
     return response.data;
   } catch (error) {
     console.error("submitConsensusVote failed:", error);
