@@ -10,7 +10,7 @@ import { create } from "zustand";
  */
 const useRoutineStore = create((set) => ({
   // --- State ---
-  currentBudget: 50.0,
+  currentBudget: 2000.0, // INR; overwritten by the live wallet summary on load
   isRoutinePaused: false,
   activeAlerts: [],
 
