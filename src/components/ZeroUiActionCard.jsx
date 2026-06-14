@@ -13,8 +13,6 @@ import React from "react";
  * @param {string}   location         - Where the event takes place.
  * @param {number}   confidenceScore  - Decimal 0..1 (e.g. 0.98 => "98%").
  * @param {string}   systemAction     - The AI's background behavior/intent.
- * @param {Function} onVerify         - Called when "Verify & Echo" is clicked.
- * @param {Function} onFlag           - Called when "Flag Error" is clicked.
  */
 function ZeroUiActionCard({
   eventName,
@@ -22,8 +20,6 @@ function ZeroUiActionCard({
   location,
   confidenceScore = 0,
   systemAction,
-  onVerify,
-  onFlag,
 }) {
   // Normalize and clamp the confidence score, then convert to a percentage.
   const safeScore = Number.isFinite(confidenceScore) ? confidenceScore : 0;
@@ -130,24 +126,6 @@ function ZeroUiActionCard({
         <p className="mt-1 text-sm font-semibold leading-snug text-indigo-900">
           {systemAction || "No action proposed."}
         </p>
-      </div>
-
-      {/* Actions */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={onVerify}
-          className="inline-flex flex-1 items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-        >
-          Verify &amp; Echo
-        </button>
-        <button
-          type="button"
-          onClick={onFlag}
-          className="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
-        >
-          Flag Error
-        </button>
       </div>
     </div>
   );

@@ -134,9 +134,6 @@ function OverrideWidget() {
     setIsUploading(false);
   };
 
-  const handleVerify = (eventData) => console.log("Verified & Echoed:", eventData);
-  const handleFlag = (eventData) => console.log("Flagged as error:", eventData);
-
   const isManual = inputMethod === "manual";
   const canSubmit = isManual ? !!mName.trim() : !!selectedImage;
   const submitLabel = isUploading
@@ -346,8 +343,6 @@ function OverrideWidget() {
             location={event.location || "TBD"}
             confidenceScore={event.confidenceScore || 0}
             systemAction="AI Verification Complete. Safe-Skip active if needed."
-            onVerify={() => handleVerify(event)}
-            onFlag={() => handleFlag(event)}
           />
         ))}
       </div>

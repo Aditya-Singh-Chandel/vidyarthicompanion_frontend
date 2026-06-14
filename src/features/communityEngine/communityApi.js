@@ -126,6 +126,17 @@ export async function approveRequest(nodeId, userId) {
   }
 }
 
+/** Admin-only: promote an existing member to admin. */
+export async function promoteMember(nodeId, userId) {
+  try {
+    await apiClient.post(`/community/nodes/${nodeId}/admins`, { userId });
+    return true;
+  } catch (error) {
+    console.error("promoteMember failed:", error);
+    return false;
+  }
+}
+
 /** Members + pending requests of a community. @returns {Promise<object|null>} */
 export async function getNodeMembers(nodeId) {
   try {
@@ -147,23 +158,6 @@ export async function getNodeFeed(nodeId) {
     return response.data?.data ?? null;
   } catch (error) {
     console.error("getNodeFeed failed:", error);
-    return null;
-  }
-}
-
-/**
- * Broadcast a new update into a community. Enters the feed as pending and
- * rises to verified once peers Echo it past the consensus threshold.
- * @param {string} nodeId
- * @param {{eventName:string, date?:string, location?:string}} payload
- * @returns {Promise<object|null>}
- */
-export async function postNodeUpdate(nodeId, payload) {
-  try {
-    const response = await apiClient.post(`/community/nodes/${nodeId}/updates`, payload);
-    return response.data ?? null;
-  } catch (error) {
-    console.error("postNodeUpdate failed:", error);
     return null;
   }
 }

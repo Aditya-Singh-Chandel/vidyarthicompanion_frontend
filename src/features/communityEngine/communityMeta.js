@@ -1,11 +1,4 @@
-import {
-  Megaphone,
-  ShieldCheck,
-  HeartPulse,
-  CheckCircle2,
-  Clock3,
-  XCircle,
-} from 'lucide-react';
+import { Megaphone, HeartPulse, CheckCircle2, Clock3, XCircle } from 'lucide-react';
 
 /**
  * Behavioural nature of a community. Drives colour, copy and whether the
@@ -23,17 +16,6 @@ export const NATURE_META = {
     text: 'text-indigo-700',
     softBg: 'bg-indigo-50',
   },
-  individuality: {
-    label: 'Individuality',
-    Icon: ShieldCheck,
-    tagline: 'Confidential safe-space · zero-telemetry',
-    accent: 'rose',
-    chip: 'bg-rose-100 text-rose-700',
-    ring: 'ring-rose-100',
-    dot: 'bg-rose-500',
-    text: 'text-rose-700',
-    softBg: 'bg-rose-50',
-  },
   wellbeing: {
     label: 'Wellbeing',
     Icon: HeartPulse,
@@ -47,7 +29,7 @@ export const NATURE_META = {
   },
 };
 
-export const NATURE_ORDER = ['accountability', 'individuality', 'wellbeing'];
+export const NATURE_ORDER = ['accountability', 'wellbeing'];
 
 export function natureOf(nature) {
   return NATURE_META[nature] || NATURE_META.accountability;
