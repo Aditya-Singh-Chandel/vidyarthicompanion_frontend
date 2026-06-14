@@ -38,7 +38,7 @@ export default function MasterCalendar() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const events = await getScheduleEvents();
+      const events = await getScheduleEvents('verified');
       if (cancelled) return;
       const grouped = {};
       for (const ev of events) {
