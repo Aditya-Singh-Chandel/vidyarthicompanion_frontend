@@ -2,27 +2,53 @@
 
 import React, { useState, useEffect } from 'react';
 import { Navigation, MapPin, Clock, ArrowRight } from 'lucide-react';
-// import { getDepartureTime } from './transitApi';
+import { getDepartureTime } from './transitApi';
+
+// Fallback used before the backend responds or if it is unreachable.
+const FALLBACK_EVENT = {
+  title: "Project Sync & Dinner",
+  location: "SG Highway Cafe",
+  time: "8:00 PM",
+  transitMode: "Auto Rickshaw",
+  estTravelTime: "35 mins",
+  leaveIn: "25 mins",
+  status: "warning" // 'safe', 'warning', 'critical'
+};
+
+// Placeholder event id until a real "next event" lookup is available.
+const NEXT_EVENT_ID = "next";
 
 export default function TransitWidget() {
-  const [isMounted, setIsMounted] = useState(false);
+  const [nextEvent, setNextEvent] = useState(FALLBACK_EVENT);
+  const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    let cancelled = false;
+
+    const fetchDeparture = async (currentLocation) => {
+      const data = await getDepartureTime(NEXT_EVENT_ID, currentLocation);
+      if (cancelled) return;
+      if (data?.success && data.data) {
+        setNextEvent(data.data);
+        setIsLive(true);
+      }
+    };
+
+    // Use real coordinates when available, otherwise a campus default.
+    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => fetchDeparture(`${pos.coords.latitude},${pos.coords.longitude}`),
+        () => fetchDeparture("campus"),
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
+      );
+    } else {
+      fetchDeparture("campus");
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  // Mock Data: Evening scenario in Ahmedabad
-  const nextEvent = {
-    title: "Project Sync & Dinner",
-    location: "SG Highway Cafe",
-    time: "8:00 PM",
-    transitMode: "Auto Rickshaw",
-    estTravelTime: "35 mins",
-    leaveIn: "25 mins",
-    status: "warning" // 'safe', 'warning', 'critical'
-  };
-
-  if (!isMounted) return <div className="h-[200px] w-full mt-6 bg-white rounded-xl border border-gray-100" />;
 
   return (
     <div className="rounded-xl border border-orange-200 bg-orange-50 p-6 shadow-sm mt-8">
@@ -32,7 +58,7 @@ export default function TransitWidget() {
           Departure Alert
         </h3>
         <span className="animate-pulse rounded-full bg-orange-200 px-2.5 py-0.5 text-xs font-semibold text-orange-900">
-          Live Tracking
+          {isLive ? 'Live Tracking' : 'Estimating...'}
         </span>
       </div>
 

@@ -20,6 +20,9 @@ const useRoutineStore = create((set) => ({
   deductBudget: (amount) =>
     set((state) => ({ currentBudget: state.currentBudget - amount })),
 
+  /** Set the current budget to an absolute value (e.g. from a backend balance). */
+  setBudget: (amount) => set({ currentBudget: amount }),
+
   /** Pause the routine and record the reason as an active alert. */
   triggerSafeSkip: (reason) =>
     set((state) => ({
