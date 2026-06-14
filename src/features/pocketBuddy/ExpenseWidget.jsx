@@ -17,18 +17,28 @@ function formatCurrency(amount) {
 function ExpenseWidget() {
   const currentBudget = useRoutineStore((state) => state.currentBudget);
   const deductBudget = useRoutineStore((state) => state.deductBudget);
+  const setBudget = useRoutineStore((state) => state.setBudget);
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [spendAlert, setSpendAlert] = useState(null);
 
   const isCritical = currentBudget < CRITICAL_THRESHOLD;
 
   const handleSimulateTransaction = async () => {
     setIsProcessing(true);
+    setSpendAlert(null);
     try {
-      // Fire the (mock) backend webhook. Resolves to response data or null.
-      await simulateTransaction("student_123", 5.0);
-      // Update local budget regardless of API outcome for now.
-      deductBudget(5);
+      // Fire the backend webhook. Resolves to response data or null on failure.
+      const result = await simulateTransaction("student_123", 5.0);
+
+      if (result?.success && typeof result.data?.newBalance === "number") {
+        // Authoritative balance returned by the backend ledger.
+        setBudget(result.data.newBalance);
+        if (result.data.alert) setSpendAlert(result.data.alert);
+      } else {
+        // Backend unreachable - fall back to optimistic local deduction.
+        deductBudget(5);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -74,6 +84,29 @@ function ExpenseWidget() {
             <span className="font-medium">
               Budget Critical: Recommending Mess Food over Outside Dining.
             </span>
+          </div>
+        )}
+
+        {spendAlert && (
+          <div
+            role="status"
+            className="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
+          >
+            <svg
+              className="mt-0.5 h-4 w-4 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+              />
+            </svg>
+            <span className="font-medium">{spendAlert}</span>
           </div>
         )}
       </div>
