@@ -3,14 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, Wallet, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Wallet, UserCog, LogOut } from 'lucide-react';
 import { useAuth } from '@/features/authEngine/AuthContext';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Community', href: '/community', icon: Users },
   { name: 'PocketBuddy', href: '/wallet', icon: Wallet },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Profile', href: '/profile', icon: UserCog },
 ];
 
 const ROLE_LABELS = {
