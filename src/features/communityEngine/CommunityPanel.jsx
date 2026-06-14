@@ -7,10 +7,10 @@ import {
   Lock,
   Globe,
   ShieldQuestion,
+  ShieldCheck,
   Loader2,
   ThumbsUp,
   ThumbsDown,
-  Send,
   MapPin,
   CalendarClock,
   LogOut,
@@ -24,11 +24,11 @@ import {
 import { natureOf, statusOf } from './communityMeta';
 import {
   getNodeFeed,
-  postNodeUpdate,
   voteOnEvent,
   leaveNode,
   getNodeMembers,
   approveRequest,
+  promoteMember,
 } from './communityApi';
 
 function formatWhen(iso) {
@@ -118,93 +118,26 @@ function UpdateCard({ update, votingEnabled, onVote, busy }) {
   );
 }
 
-function Composer({ votingEnabled, nature, onPost, posting }) {
-  const [title, setTitle] = useState('');
-  const [datetime, setDatetime] = useState('');
-  const [location, setLocation] = useState('');
-
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-    const payload = {
-      eventName: title.trim(),
-      date: datetime ? new Date(datetime).toISOString() : new Date().toISOString(),
-      location: location.trim() || 'TBD',
-    };
-    const ok = await onPost(payload);
-    if (ok) {
-      setTitle('');
-      setDatetime('');
-      setLocation('');
-    }
-  };
-
-  const placeholder =
-    nature === 'wellbeing'
-      ? 'Share a check-in or an empathy nudge…'
-      : nature === 'individuality'
-      ? 'Share something with your safe-space…'
-      : 'Post an update — e.g. "OS class moved to 5 PM"';
-
-  return (
-    <form onSubmit={submit} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-      />
-      {votingEnabled && (
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-            When
-            <input
-              type="datetime-local"
-              value={datetime}
-              onChange={(e) => setDatetime(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            />
-          </label>
-          <label className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-            Where
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Room / venue"
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            />
-          </label>
-        </div>
-      )}
-      <div className="mt-3 flex items-center justify-between">
-        <p className="text-[11px] text-gray-400">
-          {votingEnabled
-            ? 'Posts start as pending until the community echoes them.'
-            : 'Shared privately with members of this community.'}
-        </p>
-        <button
-          type="submit"
-          disabled={posting || !title.trim()}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
-        >
-          {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          Post
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function RequestsPanel({ nodeId, onApproved }) {
+/** Admin management: approve pending requests + promote members to admin. */
+function ManagePanel({ nodeId, onChanged }) {
   const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState([]);
   const [pending, setPending] = useState([]);
   const [busyId, setBusyId] = useState(null);
+
+  const load = useCallback(async () => {
+    const data = await getNodeMembers(nodeId);
+    setMembers(data?.members || []);
+    setPending(data?.pending || []);
+    setLoading(false);
+  }, [nodeId]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const data = await getNodeMembers(nodeId);
       if (cancelled) return;
+      setMembers(data?.members || []);
       setPending(data?.pending || []);
       setLoading(false);
     })();
@@ -214,49 +147,85 @@ function RequestsPanel({ nodeId, onApproved }) {
   }, [nodeId]);
 
   const approve = async (userId) => {
-    setBusyId(userId);
-    const ok = await approveRequest(nodeId, userId);
-    if (ok) {
-      setPending((prev) => prev.filter((p) => p.userId !== userId));
-      onApproved?.();
+    setBusyId(`a-${userId}`);
+    if (await approveRequest(nodeId, userId)) {
+      await load();
+      onChanged?.();
+    }
+    setBusyId(null);
+  };
+
+  const promote = async (userId) => {
+    setBusyId(`p-${userId}`);
+    if (await promoteMember(nodeId, userId)) {
+      await load();
+      onChanged?.();
     }
     setBusyId(null);
   };
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
-        <Loader2 className="h-4 w-4 animate-spin" /> Loading requests…
+      <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-400 shadow-sm">
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading members…
       </div>
     );
   }
-  if (pending.length === 0) {
-    return (
-      <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
-        No pending join requests.
-      </div>
-    );
-  }
+
   return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-      <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-amber-700">
-        <Inbox className="h-3.5 w-3.5" /> Pending requests
-      </p>
-      <ul className="space-y-2">
-        {pending.map((p) => (
-          <li key={p.userId} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
-            <span className="text-sm font-medium text-gray-800">{p.name}</span>
-            <button
-              onClick={() => approve(p.userId)}
-              disabled={busyId === p.userId}
-              className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
-            >
-              {busyId === p.userId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserCheck className="h-3.5 w-3.5" />}
-              Approve
-            </button>
-          </li>
-        ))}
-      </ul>
+    <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      {pending.length > 0 && (
+        <div>
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-amber-700">
+            <Inbox className="h-3.5 w-3.5" /> Pending requests
+          </p>
+          <ul className="space-y-2">
+            {pending.map((p) => (
+              <li key={p.userId} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2">
+                <span className="text-sm font-medium text-gray-800">{p.name}</span>
+                <button
+                  onClick={() => approve(p.userId)}
+                  disabled={busyId === `a-${p.userId}`}
+                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {busyId === `a-${p.userId}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserCheck className="h-3.5 w-3.5" />}
+                  Approve
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div>
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-gray-400">
+          <Users className="h-3.5 w-3.5" /> Members ({members.length})
+        </p>
+        <ul className="space-y-2">
+          {members.map((m) => (
+            <li key={m.userId} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2">
+              <span className="flex items-center gap-2 text-sm font-medium text-gray-800">
+                {m.name}
+                {m.isAdmin && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
+                    <Crown className="h-3 w-3" /> Admin
+                  </span>
+                )}
+              </span>
+              {!m.isAdmin && (
+                <button
+                  onClick={() => promote(m.userId)}
+                  disabled={busyId === `p-${m.userId}`}
+                  className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                >
+                  {busyId === `p-${m.userId}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+                  Make admin
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
@@ -265,10 +234,9 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
   const [loading, setLoading] = useState(true);
   const [node, setNode] = useState(null);
   const [updates, setUpdates] = useState([]);
-  const [posting, setPosting] = useState(false);
   const [voteBusyId, setVoteBusyId] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [showRequests, setShowRequests] = useState(false);
+  const [showManage, setShowManage] = useState(false);
 
   const load = useCallback(async () => {
     const data = await getNodeFeed(nodeId);
@@ -290,18 +258,6 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
       cancelled = true;
     };
   }, [nodeId]);
-
-  const handlePost = async (payload) => {
-    setPosting(true);
-    const res = await postNodeUpdate(nodeId, payload);
-    setPosting(false);
-    if (res) {
-      await load();
-      onMembershipChange?.();
-      return true;
-    }
-    return false;
-  };
 
   const handleVote = async (eventId, voteType) => {
     setVoteBusyId(eventId);
@@ -375,7 +331,7 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h2 className="text-xl font-bold tracking-tight text-gray-900">{node.name}</h2>
-              {node.isCr && (
+              {node.isAdmin && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">
                   <Crown className="h-3 w-3" /> Admin
                 </span>
@@ -402,8 +358,8 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
           </button>
         </div>
 
-        {/* Owner controls: invite code + requests */}
-        {node.isCr && (
+        {/* Admin controls: invite code + manage members/requests */}
+        {node.isAdmin && (
           <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 px-5 py-3">
             {node.inviteCode && (
               <button
@@ -414,25 +370,29 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
                 Invite: {node.inviteCode}
               </button>
             )}
-            {node.joinPolicy === 'locked' && (
-              <button
-                onClick={() => setShowRequests((s) => !s)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100"
-              >
-                <Inbox className="h-3.5 w-3.5" /> Requests
-                {node.pendingCount > 0 && (
-                  <span className="rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">
-                    {node.pendingCount}
-                  </span>
-                )}
-              </button>
-            )}
+            <button
+              onClick={() => setShowManage((s) => !s)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+            >
+              <Users className="h-3.5 w-3.5" /> Manage members
+              {node.pendingCount > 0 && (
+                <span className="rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">
+                  {node.pendingCount}
+                </span>
+              )}
+            </button>
           </div>
         )}
       </div>
 
-      {showRequests && node.isCr && (
-        <RequestsPanel nodeId={nodeId} onApproved={() => { load(); onMembershipChange?.(); }} />
+      {showManage && node.isAdmin && (
+        <ManagePanel
+          nodeId={nodeId}
+          onChanged={() => {
+            load();
+            onMembershipChange?.();
+          }}
+        />
       )}
 
       {/* Verified flow banner for accountability communities */}
@@ -441,16 +401,9 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
           <ArrowUpRight className="h-4 w-4 shrink-0" />
           <span>
             <span className="font-semibold">{verifiedCount} verified</span> update
-            {verifiedCount === 1 ? '' : 's'} flow straight to your Dashboard &amp; Master Calendar. Echo to
-            confirm, Flag to correct AI mistakes.
+            {verifiedCount === 1 ? '' : 's'} flow to your Dashboard &amp; Master Calendar. Echo to confirm,
+            Flag to correct AI mistakes — once flags catch up to echoes, an update drops back out.
           </span>
-        </div>
-      )}
-
-      {node.nature === 'individuality' && (
-        <div className="flex items-center gap-2 rounded-xl border border-rose-100 bg-rose-50/60 px-4 py-2.5 text-xs text-rose-700">
-          <ShieldQuestion className="h-4 w-4 shrink-0" />
-          <span>Zero-Telemetry Zone — voting is off and nothing here leaves this circle.</span>
         </div>
       )}
 
@@ -461,18 +414,15 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
         </div>
       )}
 
-      {/* Composer */}
-      <Composer votingEnabled={node.votingEnabled} nature={node.nature} onPost={handlePost} posting={posting} />
-
       {/* Feed */}
       <div>
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-400">
-          Community updates
-        </h3>
+        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-400">Community updates</h3>
         {updates.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-white py-14 text-center">
             <p className="text-sm font-medium text-gray-800">No updates yet</p>
-            <p className="mt-1 text-xs text-gray-500">Be the first to post something for this community.</p>
+            <p className="mt-1 text-xs text-gray-500">
+              Share a schedule to this community from the Dashboard&apos;s Override Engine and it will appear here.
+            </p>
           </div>
         ) : (
           <ul className="space-y-3">
