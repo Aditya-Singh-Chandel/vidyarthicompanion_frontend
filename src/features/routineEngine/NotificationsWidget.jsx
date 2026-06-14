@@ -93,12 +93,12 @@ export default function NotificationsWidget() {
             )}
           </div>
 
-          {/* Departure alert */}
+          {/* Departure alert (only when same-day travel is actually required) */}
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
               Departure Alert (Next Task)
             </p>
-            {departure && departure.status !== 'none' ? (
+            {departure && ['safe', 'warning', 'critical'].includes(departure.status) ? (
               <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
                 <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
                   <Navigation className="h-4 w-4 text-orange-600" />
@@ -127,8 +127,10 @@ export default function NotificationsWidget() {
                   </div>
                 )}
               </div>
-            ) : departure && departure.status === 'none' ? (
-              <p className="text-xs text-gray-400">{departure.message || 'No upcoming tasks.'}</p>
+            ) : departure ? (
+              <p className="text-xs text-gray-400">
+                {departure.message || 'No travel needed for your next task.'}
+              </p>
             ) : (
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <Loader2 className="h-3 w-3 animate-spin" /> Calculating route from your location…

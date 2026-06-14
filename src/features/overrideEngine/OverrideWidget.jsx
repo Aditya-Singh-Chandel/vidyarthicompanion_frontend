@@ -1,8 +1,9 @@
 'use client'; // Required for Next.js App Router since we use state
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Check } from "lucide-react";
 import ZeroUiActionCard from "../../components/ZeroUiActionCard";
-import { verifyScheduleOverride } from "./overrideApi";
+import { verifyScheduleOverride, createManualEvent } from "./overrideApi";
 import { getMyNodes } from "../communityEngine/communityApi";
 
 /**
@@ -11,10 +12,7 @@ import { getMyNodes } from "../communityEngine/communityApi";
  */
 function formatIsoDate(isoString) {
   const parsed = new Date(isoString);
-  if (Number.isNaN(parsed.getTime())) {
-    return isoString;
-  }
-
+  if (Number.isNaN(parsed.getTime())) return isoString;
   return parsed.toLocaleString(undefined, {
     weekday: "short",
     month: "short",
@@ -27,14 +25,22 @@ function formatIsoDate(isoString) {
 
 function OverrideWidget() {
   const [isUploading, setIsUploading] = useState(false);
-  
-  // UPDATED: Now expecting an array of events
   const [responseEvents, setResponseEvents] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [myNodes, setMyNodes] = useState([]);
   const [shareNodeId, setShareNodeId] = useState(""); // "" = personal
-  const [inputMethod, setInputMethod] = useState("upload"); // 'upload' | 'paste'
+  const [inputMethod, setInputMethod] = useState("upload"); // 'upload' | 'paste' | 'manual'
   const [pasteError, setPasteError] = useState(null);
+  const [statusMsg, setStatusMsg] = useState(null);
+
+  // Manual-entry fields.
+  const [mName, setMName] = useState("");
+  const [mDate, setMDate] = useState("");
+  const [mTime, setMTime] = useState("");
+  const [mLocation, setMLocation] = useState("");
+
+  const previewUrlRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,9 +53,30 @@ function OverrideWidget() {
     };
   }, []);
 
-  const handleImageChange = (event) => {
-    const file = event.target.files?.[0] ?? null;
+  // Revoke any object URL on unmount (no setState in the effect body).
+  useEffect(() => () => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+  }, []);
+
+  // Set the selected file + manage an image preview URL (from event handlers,
+  // so we never call setState synchronously inside an effect).
+  const setImage = (file) => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
     setSelectedImage(file);
+    if (file && file.type?.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      previewUrlRef.current = url;
+      setPreviewUrl(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const handleImageChange = (event) => {
+    setImage(event.target.files?.[0] ?? null);
   };
 
   // Capture a pasted image (Ctrl/Cmd+V) into the paste area.
@@ -61,7 +88,7 @@ function OverrideWidget() {
         const blob = item.getAsFile();
         if (blob) {
           const ext = (blob.type.split("/")[1] || "png").split("+")[0];
-          setSelectedImage(new File([blob], `pasted-image.${ext}`, { type: blob.type }));
+          setImage(new File([blob], `pasted-image.${ext}`, { type: blob.type }));
           event.preventDefault();
           return;
         }
@@ -70,67 +97,60 @@ function OverrideWidget() {
     setPasteError("No image found in the paste. Copy an image first, then paste here.");
   };
 
-  // Read an image directly from the clipboard via the async Clipboard API.
-  const handleClipboardRead = async () => {
-    setPasteError(null);
-    try {
-      if (!navigator.clipboard?.read) {
-        setPasteError("Clipboard access isn't available in this browser. Use Ctrl/Cmd+V instead.");
-        return;
-      }
-      const items = await navigator.clipboard.read();
-      for (const item of items) {
-        const imgType = item.types.find((t) => t.startsWith("image/"));
-        if (imgType) {
-          const blob = await item.getType(imgType);
-          const ext = (imgType.split("/")[1] || "png").split("+")[0];
-          setSelectedImage(new File([blob], `pasted-image.${ext}`, { type: imgType }));
-          return;
-        }
-      }
-      setPasteError("No image found in the clipboard.");
-    } catch {
-      setPasteError("Couldn't read the clipboard. Use Ctrl/Cmd+V instead.");
-    }
+  const ingestResult = (resultArray) => {
+    if (resultArray && Array.isArray(resultArray)) setResponseEvents(resultArray);
+    else if (resultArray && resultArray.events) setResponseEvents(resultArray.events);
+    else console.error("Backend did not return a valid array of events.");
   };
 
   const handleApiCall = async () => {
     if (!selectedImage) return;
-
     setIsUploading(true);
-    setResponseEvents([]); // Clear previous results
-
-    // LIVE API CONNECTION (shareNodeId "" means personal/private)
+    setStatusMsg(null);
+    setResponseEvents([]);
     const resultArray = await verifyScheduleOverride(selectedImage, shareNodeId || null);
-    console.log("Raw Array from Backend:", resultArray);
-
-    if (resultArray && Array.isArray(resultArray)) {
-      setResponseEvents(resultArray);
-    } else if (resultArray && resultArray.events) {
-      // Fallback just in case User 3 nested it inside an 'events' key
-      setResponseEvents(resultArray.events);
-    } else {
-      console.error("Backend did not return a valid array of events.");
-    }
-    
+    ingestResult(resultArray);
     setIsUploading(false);
   };
 
-  const handleVerify = (eventData) => {
-    console.log("Verified & Echoed:", eventData);
+  const handleManualSubmit = async () => {
+    if (!mName.trim()) return;
+    setIsUploading(true);
+    setStatusMsg(null);
+    setResponseEvents([]);
+    const res = await createManualEvent({
+      eventName: mName,
+      date: mDate,
+      time: mTime,
+      location: mLocation,
+      nodeId: shareNodeId || null,
+    });
+    if (res?.success) {
+      setStatusMsg(res.message || "Event added.");
+      if (res.data) setResponseEvents([res.data]);
+    } else {
+      setStatusMsg("Could not add the event. Please try again.");
+    }
+    setIsUploading(false);
   };
 
-  const handleFlag = (eventData) => {
-    console.log("Flagged as error:", eventData);
-  };
+  const handleVerify = (eventData) => console.log("Verified & Echoed:", eventData);
+  const handleFlag = (eventData) => console.log("Flagged as error:", eventData);
+
+  const isManual = inputMethod === "manual";
+  const canSubmit = isManual ? !!mName.trim() : !!selectedImage;
+  const submitLabel = isUploading
+    ? "Processing…"
+    : isManual
+    ? "Add Event"
+    : "Verify Schedule";
 
   return (
     <div className="mx-auto w-full max-w-md space-y-6 p-6">
-      {/* Upload + simulate controls */}
       <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-bold text-gray-900">Override Engine</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Upload or paste a schedule (image, PDF, CSV, or ICS) and run the detection pipeline.
+          Upload, paste, or type a schedule entry and run the detection pipeline.
         </p>
 
         {/* Input method selector */}
@@ -144,16 +164,19 @@ function OverrideWidget() {
             onChange={(e) => {
               setInputMethod(e.target.value);
               setPasteError(null);
+              setStatusMsg(null);
             }}
             disabled={isUploading}
             className="mt-2 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none disabled:opacity-60"
           >
             <option value="upload">Upload a file</option>
             <option value="paste">Copy / paste an image</option>
+            <option value="manual">Manual entry</option>
           </select>
         </div>
 
-        {inputMethod === "upload" ? (
+        {/* UPLOAD */}
+        {inputMethod === "upload" && (
           <div className="mt-4">
             <label htmlFor="override-image" className="block text-sm font-medium text-gray-700">
               Schedule file
@@ -168,30 +191,106 @@ function OverrideWidget() {
             />
             <p className="mt-1 text-xs text-gray-400">Supported: images, PDF, CSV, ICS.</p>
           </div>
-        ) : (
+        )}
+
+        {/* PASTE */}
+        {inputMethod === "paste" && (
           <div className="mt-4">
             <span className="block text-sm font-medium text-gray-700">Paste an image</span>
             <div
               role="textbox"
               tabIndex={0}
               onPaste={handlePaste}
-              className="mt-2 flex min-h-[88px] cursor-text items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-center text-xs text-gray-500 focus:border-indigo-400 focus:outline-none"
+              className={`mt-2 flex min-h-[96px] cursor-text flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-3 text-center text-xs focus:outline-none ${
+                previewUrl
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                  : "border-gray-300 bg-gray-50 text-gray-500 focus:border-indigo-400"
+              }`}
             >
-              Click here and press <span className="mx-1 font-semibold">Ctrl/Cmd + V</span> to paste a copied image.
+              {previewUrl ? (
+                <>
+                  <span className="mb-2 inline-flex items-center gap-1 font-semibold">
+                    <Check className="h-3.5 w-3.5" /> Image pasted
+                  </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={previewUrl} alt="Pasted preview" className="max-h-32 rounded-md border border-emerald-200 shadow-sm" />
+                  <span className="mt-1 text-[11px] text-emerald-600">Press Ctrl/Cmd+V again to replace.</span>
+                </>
+              ) : (
+                <span>
+                  Click here and press <span className="font-semibold">Ctrl/Cmd + V</span> to paste a copied image.
+                </span>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={handleClipboardRead}
-              disabled={isUploading}
-              className="mt-2 inline-flex items-center gap-1 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-200 disabled:opacity-60"
-            >
-              Paste from clipboard
-            </button>
             {pasteError && <p className="mt-1 text-xs text-red-500">{pasteError}</p>}
           </div>
         )}
 
-        {selectedImage && (
+        {/* MANUAL */}
+        {isManual && (
+          <div className="mt-4 space-y-3">
+            <div>
+              <label htmlFor="m-name" className="block text-sm font-medium text-gray-700">
+                Event
+              </label>
+              <input
+                id="m-name"
+                type="text"
+                value={mName}
+                onChange={(e) => setMName(e.target.value)}
+                placeholder="e.g. Data Structures Lecture"
+                disabled={isUploading}
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none disabled:opacity-60"
+              />
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label htmlFor="m-date" className="block text-sm font-medium text-gray-700">
+                  Date
+                </label>
+                <input
+                  id="m-date"
+                  type="date"
+                  value={mDate}
+                  onChange={(e) => setMDate(e.target.value)}
+                  disabled={isUploading}
+                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none disabled:opacity-60"
+                />
+              </div>
+              <div className="flex-1">
+                <label htmlFor="m-time" className="block text-sm font-medium text-gray-700">
+                  Time
+                </label>
+                <input
+                  id="m-time"
+                  type="time"
+                  value={mTime}
+                  onChange={(e) => setMTime(e.target.value)}
+                  disabled={isUploading}
+                  className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none disabled:opacity-60"
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="m-loc" className="block text-sm font-medium text-gray-700">
+                Location
+              </label>
+              <input
+                id="m-loc"
+                type="text"
+                value={mLocation}
+                onChange={(e) => setMLocation(e.target.value)}
+                placeholder="e.g. Room 402"
+                disabled={isUploading}
+                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none disabled:opacity-60"
+              />
+            </div>
+            <p className="text-xs text-gray-400">No date? It defaults to today.</p>
+          </div>
+        )}
+
+        {/* Selected-file label (for non-image files) */}
+        {!isManual && selectedImage && !previewUrl && (
           <p className="mt-2 truncate text-xs text-gray-500">Selected: {selectedImage.name}</p>
         )}
 
@@ -221,41 +320,27 @@ function OverrideWidget() {
 
         <button
           type="button"
-          onClick={handleApiCall}
-          disabled={isUploading || !selectedImage}
+          onClick={isManual ? handleManualSubmit : handleApiCall}
+          disabled={isUploading || !canSubmit}
           className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isUploading && (
-            <svg
-              className="h-4 w-4 animate-spin"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-              />
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
             </svg>
           )}
-          {isUploading ? "Processing via Gemini AI..." : "Verify Schedule Upload"}
+          {submitLabel}
         </button>
+
+        {statusMsg && <p className="mt-3 text-center text-xs font-medium text-indigo-700">{statusMsg}</p>}
       </div>
 
-      {/* Render Multiple Results if Syllabus Uploaded */}
+      {/* Render extracted / added events */}
       <div className="space-y-4">
         {responseEvents.map((event, index) => (
           <ZeroUiActionCard
-            key={index}
+            key={event._id || index}
             eventName={event.eventName || "Unknown Event"}
             date={formatIsoDate(event.date || new Date().toISOString())}
             location={event.location || "TBD"}
