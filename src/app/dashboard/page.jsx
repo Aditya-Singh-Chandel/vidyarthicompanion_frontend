@@ -1,7 +1,7 @@
 import React from 'react';
 import OverrideWidget from '@/features/overrideEngine/OverrideWidget';
 import RetrievalWidget from '@/features/retrievalEngine/RetrievalWidget';
-import EmpathyWidget from '@/features/empathyMesh/EmpathyWidget';
+import WellnessTracker from '@/features/wellnessTracker/WellnessTracker';
 import PresenceTracker from '@/features/presenceEngine/PresenceTracker';
 import MasterCalendar from '@/components/MasterCalendar';
 import DailyPlanWidget from '@/features/routineEngine/DailyPlanWidget';
@@ -35,18 +35,28 @@ export default function DashboardPage() {
             <OverrideWidget />
           </section>
 
-          {/* Right Column: Notifications & Wellness */}
-          <section aria-labelledby="wellness-transit-heading">
+          {/* Right Column: Notifications */}
+          <section aria-labelledby="notifications-heading">
             <h2
-              id="wellness-transit-heading"
+              id="notifications-heading"
               className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
             >
-              Notifications & Wellness
+              Notifications
             </h2>
             <NotificationsWidget />
-            <div className="mt-8">
-              <EmpathyWidget />
-            </div>
+          </section>
+        </div>
+
+        {/* Wellness Tracker & Burnout Score (full-width: side-by-side gauges) */}
+        <div className="mt-8">
+          <section aria-labelledby="wellness-heading">
+            <h2
+              id="wellness-heading"
+              className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
+            >
+              Wellness &amp; Burnout
+            </h2>
+            <WellnessTracker />
           </section>
         </div>
 
