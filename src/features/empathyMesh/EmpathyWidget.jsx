@@ -1,9 +1,78 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { HeartHandshake, ShieldAlert, BookX, HeartPulse, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { HeartHandshake, ShieldAlert, BookX, HeartPulse, Loader2, PlusCircle } from 'lucide-react';
 import useRoutineStore from '@/routineState/useRoutineStore';
-import { evaluateSafeSkip } from './empathyApi';
+import { evaluateSafeSkip, logLifestyleMetric } from './empathyApi';
+
+const LOG_TYPES = [
+  { value: 'sleep', label: 'Sleep deficit' },
+  { value: 'stress_level', label: 'Stress' },
+  { value: 'meal_skipped', label: 'Meals skipped' },
+  { value: 'social_isolation', label: 'Isolation' },
+];
+
+/** Inline form to log a wellness metric, then trigger a re-evaluation. */
+function WellnessLogger({ onLogged }) {
+  const [logType, setLogType] = useState('sleep');
+  const [severity, setSeverity] = useState(5);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    const result = await logLifestyleMetric({ logType, severity: Number(severity) });
+    setSaving(false);
+    if (result) onLogged();
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="mt-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+    >
+      <div className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-700">
+        <PlusCircle className="h-4 w-4 text-indigo-500" />
+        Log today&apos;s wellness
+      </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <label className="flex-1 text-xs font-medium text-gray-500">
+          Signal
+          <select
+            value={logType}
+            onChange={(e) => setLogType(e.target.value)}
+            className="mt-1 w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none"
+          >
+            {LOG_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex-1 text-xs font-medium text-gray-500">
+          Severity: <span className="font-bold text-gray-800">{severity}/10</span>
+          <input
+            type="range"
+            min="1"
+            max="10"
+            value={severity}
+            onChange={(e) => setSeverity(e.target.value)}
+            className="mt-2 w-full accent-indigo-600"
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={saving}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          Log
+        </button>
+      </div>
+    </form>
+  );
+}
 
 export default function EmpathyWidget() {
   const triggerSafeSkip = useRoutineStore((state) => state.triggerSafeSkip);
@@ -12,20 +81,17 @@ export default function EmpathyWidget() {
   const [evaluation, setEvaluation] = useState(null);
   const [nudgeSent, setNudgeSent] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      const data = await evaluateSafeSkip();
-      if (cancelled) return;
-      setEvaluation(data);
-      setLoading(false);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+  const evaluate = useCallback(async () => {
+    const data = await evaluateSafeSkip();
+    setEvaluation(data);
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      await evaluate();
+    })();
+  }, [evaluate]);
 
   const handleSafeSkip = () => {
     setNudgeSent(true);
@@ -68,12 +134,12 @@ export default function EmpathyWidget() {
         <div className="flex items-start gap-3 rounded-lg bg-white p-4 shadow-sm border border-emerald-100">
           <HeartPulse className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-bold text-gray-900">
-              Burnout Score: {burnoutScore}/10
-            </p>
+            <p className="text-sm font-bold text-gray-900">Burnout Score: {burnoutScore}/10</p>
             <p className="text-xs text-gray-600 mt-1">{reason}</p>
           </div>
         </div>
+
+        <WellnessLogger onLogged={evaluate} />
       </div>
     );
   }
@@ -119,6 +185,8 @@ export default function EmpathyWidget() {
             {nudgeSent ? 'Proxy Note Sent to CR' : 'Execute Safe-Skip & Notify CR'}
           </button>
         </div>
+
+        <WellnessLogger onLogged={evaluate} />
       </div>
     </div>
   );
