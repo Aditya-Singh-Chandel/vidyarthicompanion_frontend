@@ -62,30 +62,39 @@ export default function TransitWidget() {
         </span>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <p className="text-sm font-medium text-orange-900">Next Destination:</p>
-          <p className="text-lg font-bold text-gray-900">{nextEvent.title}</p>
-          <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
-            <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {nextEvent.location}</span>
-            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {nextEvent.time}</span>
-          </div>
+      {nextEvent.status === 'none' ? (
+        <div className="rounded-lg bg-white p-4 shadow-sm border border-orange-100">
+          <p className="text-sm font-bold text-gray-900">{nextEvent.title}</p>
+          <p className="mt-1 text-xs text-gray-500">
+            {nextEvent.message || 'No upcoming events to leave for.'}
+          </p>
         </div>
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm font-medium text-orange-900">Next Destination:</p>
+            <p className="text-lg font-bold text-gray-900">{nextEvent.title}</p>
+            <div className="mt-1 flex items-center gap-4 text-sm text-gray-600">
+              <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {nextEvent.location}</span>
+              <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {nextEvent.time}</span>
+            </div>
+          </div>
 
-        <div className="flex items-center justify-between rounded-lg bg-white p-4 shadow-sm border border-orange-100">
-          <div className="flex flex-col">
-            <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Leave In</span>
-            <span className="text-2xl font-black text-orange-600">{nextEvent.leaveIn}</span>
-          </div>
-          
-          <ArrowRight className="h-5 w-5 text-gray-300 mx-2" />
-          
-          <div className="flex flex-col text-right">
-            <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">By {nextEvent.transitMode}</span>
-            <span className="text-lg font-bold text-gray-900">{nextEvent.estTravelTime}</span>
+          <div className="flex items-center justify-between rounded-lg bg-white p-4 shadow-sm border border-orange-100">
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">Leave In</span>
+              <span className="text-2xl font-black text-orange-600">{nextEvent.leaveIn}</span>
+            </div>
+
+            <ArrowRight className="h-5 w-5 text-gray-300 mx-2" />
+
+            <div className="flex flex-col text-right">
+              <span className="text-xs text-gray-500 uppercase font-semibold tracking-wider">By {nextEvent.transitMode}</span>
+              <span className="text-lg font-bold text-gray-900">{nextEvent.estTravelTime}</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
