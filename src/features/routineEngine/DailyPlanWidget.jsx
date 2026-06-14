@@ -97,6 +97,7 @@ function PlanCard({ card }) {
 export default function DailyPlanWidget() {
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState(null);
+  const [now, setNow] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,23 +112,53 @@ export default function DailyPlanWidget() {
     };
   }, []);
 
+  // Live clock (set via timers so it never runs setState synchronously in the effect).
+  useEffect(() => {
+    const prime = setTimeout(() => setNow(new Date()), 0);
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => {
+      clearTimeout(prime);
+      clearInterval(id);
+    };
+  }, []);
+
+  const clockLabel = now
+    ? now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' })
+    : '--:--';
+
+  // Safety guard: only show future event cards (non-event cards always shown).
+  // Uses the live clock state (pure) rather than Date.now() during render.
+  const visibleCards = (plan?.cards || []).filter((c) => {
+    if (c.kind !== 'event' || !c.date) return true;
+    if (!now) return true; // before the clock primes, trust the backend's future-only filter
+    return new Date(c.date).getTime() >= now.getTime() - 60000;
+  });
+
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-      <div className="mb-1 flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-indigo-600" />
-        <h2 className="text-lg font-black tracking-tight text-gray-900">Today&apos;s Plan</h2>
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-indigo-600" />
+          <h2 className="text-lg font-black tracking-tight text-gray-900">Today&apos;s Plan</h2>
+        </div>
+        <span
+          className="rounded-lg bg-gray-900 px-3 py-1 font-mono text-sm font-bold tabular-nums tracking-wider text-emerald-300 shadow-inner"
+          aria-label="current time"
+        >
+          {clockLabel}
+        </span>
       </div>
       <p className="mb-4 text-xs text-gray-500">
-        Auto-prioritized from your verified schedule, wellbeing, and budget. Tests always rank first.
+        Auto-prioritized from your upcoming schedule, wellbeing, and budget. Tests always rank first.
       </p>
 
       {loading ? (
         <div className="flex items-center gap-2 py-8 text-sm text-gray-400">
           <Loader2 className="h-4 w-4 animate-spin" /> Assembling your day…
         </div>
-      ) : !plan || plan.cards.length === 0 ? (
+      ) : !plan || visibleCards.length === 0 ? (
         <div className="rounded-lg border border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
-          Nothing scheduled in the next week. Upload a timetable via the Override Engine to get started.
+          Nothing upcoming. Upload a timetable via the Override Engine to get started.
         </div>
       ) : (
         <>
@@ -152,7 +183,7 @@ export default function DailyPlanWidget() {
           )}
 
           <ul className="space-y-3">
-            {plan.cards.map((card) => (
+            {visibleCards.map((card) => (
               <PlanCard key={card.id} card={card} />
             ))}
           </ul>
