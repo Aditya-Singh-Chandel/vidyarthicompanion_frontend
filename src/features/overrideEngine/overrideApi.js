@@ -53,3 +53,28 @@ export async function verifyScheduleOverride(file, nodeId = null) {
 }
 
 export default verifyScheduleOverride;
+
+
+
+/**
+ * Manually add an event with explicit text + chosen date/time.
+ * userId is derived server-side from the JWT.
+ *
+ * @param {object} params - { eventName, date (YYYY-MM-DD), time (HH:MM), location, nodeId }
+ * @returns {Promise<object|null>} { status, message, data } or null on failure.
+ */
+export async function createManualEvent({ eventName, date, time, location, nodeId }) {
+  try {
+    const response = await apiClient.post("/overrides/manual", {
+      eventName,
+      date: date || null,
+      time: time || null,
+      location,
+      nodeId: nodeId || null,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("createManualEvent failed:", error);
+    return null;
+  }
+}

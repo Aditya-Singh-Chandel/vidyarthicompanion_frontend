@@ -1,7 +1,6 @@
 import React from 'react';
 import OverrideWidget from '@/features/overrideEngine/OverrideWidget';
 import RetrievalWidget from '@/features/retrievalEngine/RetrievalWidget';
-import TransitWidget from '@/features/transitEngine/TransitWidget';
 import EmpathyWidget from '@/features/empathyMesh/EmpathyWidget';
 import PresenceTracker from '@/features/presenceEngine/PresenceTracker';
 import MasterCalendar from '@/components/MasterCalendar';
@@ -36,19 +35,18 @@ export default function DashboardPage() {
             <OverrideWidget />
           </section>
 
-          {/* Right Column: Wellness & Transit */}
+          {/* Right Column: Notifications & Wellness */}
           <section aria-labelledby="wellness-transit-heading">
             <h2
               id="wellness-transit-heading"
               className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
             >
-              Notifications, Wellness & Transit
+              Notifications & Wellness
             </h2>
             <NotificationsWidget />
             <div className="mt-8">
               <EmpathyWidget />
             </div>
-            <TransitWidget />
           </section>
         </div>
 
