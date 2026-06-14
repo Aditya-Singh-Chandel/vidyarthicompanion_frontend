@@ -1,21 +1,8 @@
 import apiClient from "@/lib/apiClient";
 
-export async function submitConsensusVote(eventId, voteType) {
-  try {
-    // Voter identity is derived server-side from the JWT.
-    const response = await apiClient.post("/community/vote", {
-      eventId,
-      voteType, // 1 for Echo, -1 for Flag
-    });
-    return response.data;
-  } catch (error) {
-    console.error("submitConsensusVote failed:", error);
-    return null;
-  }
-}
-
 /**
  * Fetch the campus schedule feed with consensus state.
+ * Used by the Master Calendar (verified-only) and other dashboard surfaces.
  * @param {string} [status] - optional filter: 'pending' | 'verified' | 'rejected'
  * @returns {Promise<Array>} list of events (empty array on failure)
  */
@@ -32,7 +19,7 @@ export async function getScheduleEvents(status) {
 }
 
 /**
- * Cast a trust-weighted consensus vote on an academic event.
+ * Cast a trust-weighted consensus vote on a community update (academic event).
  * @param {string} eventId
  * @param {number} voteType - 1 (Echo) or -1 (Flag)
  * @returns {Promise<object|null>} { consensusScore, status, echoes, flags } or null
@@ -47,22 +34,9 @@ export async function voteOnEvent(eventId, voteType) {
   }
 }
 
-
-
-/** Active community alerts (mess, etc.). @returns {Promise<Array>} */
-export async function getAlerts() {
-  try {
-    const response = await apiClient.get("/community/alerts");
-    return response.data?.data ?? [];
-  } catch (error) {
-    console.error("getAlerts failed:", error);
-    return [];
-  }
-}
-
 // ---- Multi-Tiered Community Graph (nodes) ----
 
-/** The current user's community nodes. */
+/** The current user's communities. */
 export async function getMyNodes() {
   try {
     const response = await apiClient.get("/community/nodes");
@@ -73,7 +47,7 @@ export async function getMyNodes() {
   }
 }
 
-/** All discoverable nodes (with isMember flag). */
+/** Discoverable PUBLIC communities (private ones never surface here). */
 export async function getAllNodes() {
   try {
     const response = await apiClient.get("/community/nodes/all");
@@ -84,10 +58,14 @@ export async function getAllNodes() {
   }
 }
 
-/** Create a new node. @returns {Promise<object|null>} */
-export async function createNode({ name, nodeType, privacy }) {
+/**
+ * Create a new community.
+ * @param {{name:string, description?:string, nature?:string, visibility?:string, joinPolicy?:string, nodeType?:string}} payload
+ * @returns {Promise<object|null>}
+ */
+export async function createNode(payload) {
   try {
-    const response = await apiClient.post("/community/nodes", { name, nodeType, privacy });
+    const response = await apiClient.post("/community/nodes", payload);
     return response.data?.data ?? null;
   } catch (error) {
     console.error("createNode failed:", error);
@@ -95,18 +73,38 @@ export async function createNode({ name, nodeType, privacy }) {
   }
 }
 
-/** Join a node by id. @returns {Promise<boolean>} */
+/**
+ * Attempt to join a community by id. Resolves the outcome so the UI can react:
+ *  - 'joined'           : now a member
+ *  - 'requested'        : locked community, awaiting admin approval
+ *  - 'invite_required'  : private community, needs an invite code
+ *  - 'error'            : request failed
+ * @returns {Promise<{status:string, message?:string}>}
+ */
 export async function joinNode(nodeId) {
   try {
-    await apiClient.post(`/community/nodes/${nodeId}/join`);
-    return true;
+    const response = await apiClient.post(`/community/nodes/${nodeId}/join`);
+    return { status: response.data?.status || "joined", message: response.data?.message };
   } catch (error) {
+    const status = error?.response?.data?.status || "error";
+    const message = error?.response?.data?.message;
     console.error("joinNode failed:", error);
-    return false;
+    return { status, message };
   }
 }
 
-/** Leave a node by id. @returns {Promise<boolean>} */
+/** Join a PRIVATE community using an invite code. */
+export async function joinByCode(code) {
+  try {
+    const response = await apiClient.post("/community/nodes/join-by-code", { code });
+    return { status: "joined", node: response.data?.data, message: response.data?.message };
+  } catch (error) {
+    console.error("joinByCode failed:", error);
+    return { status: "error", message: error?.response?.data?.message || "Invalid invite code." };
+  }
+}
+
+/** Leave a community by id. @returns {Promise<boolean>} */
 export async function leaveNode(nodeId) {
   try {
     await apiClient.post(`/community/nodes/${nodeId}/leave`);
@@ -117,13 +115,55 @@ export async function leaveNode(nodeId) {
   }
 }
 
-/** Members of a node. @returns {Promise<object|null>} */
+/** Owner-only: approve a pending join request on a locked community. */
+export async function approveRequest(nodeId, userId) {
+  try {
+    await apiClient.post(`/community/nodes/${nodeId}/approve`, { userId });
+    return true;
+  } catch (error) {
+    console.error("approveRequest failed:", error);
+    return false;
+  }
+}
+
+/** Members + pending requests of a community. @returns {Promise<object|null>} */
 export async function getNodeMembers(nodeId) {
   try {
     const response = await apiClient.get(`/community/nodes/${nodeId}/members`);
     return response.data?.data ?? null;
   } catch (error) {
     console.error("getNodeMembers failed:", error);
+    return null;
+  }
+}
+
+/**
+ * A community's own column of updates (all statuses) plus its metadata.
+ * @returns {Promise<{node:object, updates:Array}|null>}
+ */
+export async function getNodeFeed(nodeId) {
+  try {
+    const response = await apiClient.get(`/community/nodes/${nodeId}/feed`);
+    return response.data?.data ?? null;
+  } catch (error) {
+    console.error("getNodeFeed failed:", error);
+    return null;
+  }
+}
+
+/**
+ * Broadcast a new update into a community. Enters the feed as pending and
+ * rises to verified once peers Echo it past the consensus threshold.
+ * @param {string} nodeId
+ * @param {{eventName:string, date?:string, location?:string}} payload
+ * @returns {Promise<object|null>}
+ */
+export async function postNodeUpdate(nodeId, payload) {
+  try {
+    const response = await apiClient.post(`/community/nodes/${nodeId}/updates`, payload);
+    return response.data ?? null;
+  } catch (error) {
+    console.error("postNodeUpdate failed:", error);
     return null;
   }
 }
