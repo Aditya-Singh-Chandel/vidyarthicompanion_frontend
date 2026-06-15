@@ -10,15 +10,27 @@ import DashboardRecommendation from '@/features/pocketBuddy/DashboardRecommendat
 
 export default function DashboardPage() {
   return (
-    <main className="min-h-screen bg-gray-50 p-4 sm:p-8">
+    <main className="min-h-screen p-4 sm:p-8">
       <PresenceTracker />
 
       <div className="mx-auto max-w-5xl">
+        {/* Heritage page header */}
+        <header className="mb-8" data-reveal>
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-indigo-600">
+            Your campus, orchestrated
+          </p>
+          <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-gray-900">
+            Good to see you. Here&rsquo;s your <em className="text-indigo-700">day</em>.
+          </h1>
+        </header>
+
         {/* The Brain: Ground-Truth Retrieval Engine */}
-        <RetrievalWidget />
+        <div data-reveal>
+          <RetrievalWidget />
+        </div>
 
         {/* The Orchestrator: prioritized daily plan */}
-        <div className="mb-8">
+        <div className="mb-8" data-reveal>
           <DailyPlanWidget />
         </div>
 
@@ -26,7 +38,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           
           {/* Left Column: Action Center */}
-          <section aria-labelledby="action-center-heading" className="flex flex-col">
+          <section aria-labelledby="action-center-heading" className="flex flex-col" data-reveal>
             <h2
               id="action-center-heading"
               className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
@@ -37,7 +49,7 @@ export default function DashboardPage() {
           </section>
 
           {/* Right Column: Notifications */}
-          <section aria-labelledby="notifications-heading">
+          <section aria-labelledby="notifications-heading" data-reveal>
             <h2
               id="notifications-heading"
               className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
@@ -55,7 +67,7 @@ export default function DashboardPage() {
 
         {/* Wellness Tracker & Burnout Score (full-width: side-by-side gauges) */}
         <div className="mt-8">
-          <section aria-labelledby="wellness-heading">
+          <section aria-labelledby="wellness-heading" data-reveal>
             <h2
               id="wellness-heading"
               className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
@@ -68,7 +80,7 @@ export default function DashboardPage() {
 
         {/* Bottom Section: The Master Schedule Hub */}
         <div className="mt-12">
-          <section aria-labelledby="calendar-heading">
+          <section aria-labelledby="calendar-heading" data-reveal>
             <div className="mb-4 flex items-center justify-between">
               <h2
                 id="calendar-heading"

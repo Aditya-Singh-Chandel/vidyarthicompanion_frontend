@@ -1,26 +1,158 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* =============================================================
+   CampusFlow — "Aurelia" Heritage Design Language
+   Re-skins the whole app by overriding Tailwind's theme tokens.
+   Because Tailwind v4 builds utilities from these CSS variables,
+   every existing `bg-indigo-600`, `text-gray-500`, `border-gray-200`
+   across the app automatically adopts the new palette.
+   ============================================================= */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+
+  /* ---- BRAND ACCENT: indigo ramp -> warm amber/terracotta ---- */
+  --color-indigo-50:  #fbf1e4;
+  --color-indigo-100: #f5ddbf;
+  --color-indigo-200: #eec594;
+  --color-indigo-300: #e3a866;
+  --color-indigo-400: #d98a45;
+  --color-indigo-500: #cf7c38;
+  --color-indigo-600: #c2702f;
+  --color-indigo-700: #9c5526;
+  --color-indigo-800: #7a4220;
+  --color-indigo-900: #5c331a;
+
+  /* ---- NEUTRALS: gray ramp -> warm stone / parchment / ink ---- */
+  --color-gray-50:  #faf6ee;
+  --color-gray-100: #f3ecdf;
+  --color-gray-200: #e7dcc8;
+  --color-gray-300: #d6c7ad;
+  --color-gray-400: #ab9f88;
+  --color-gray-500: #837969;
+  --color-gray-600: #5f574a;
+  --color-gray-700: #453f34;
+  --color-gray-800: #2c281f;
+  --color-gray-900: #1f1c15;
+
+  /* ---- semantic surface tokens ---- */
+  --color-background: #f6efe1;
+  --color-foreground: #1f1c15;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #f6efe1;
+  --foreground: #1f1c15;
+
+  --brand: #c2702f;
+  --brand-strong: #9c5526;
+  --brand-soft: #fbf1e4;
+  --forest: #1b3a34;
+  --ink: #1f1c15;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* ----------------------------- BASE ----------------------------- */
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  /* layered parchment depth — soft amber + forest glows */
+  background-color: #f6efe1;
+  background-image:
+    radial-gradient(900px circle at 12% -5%, rgba(217, 138, 69, 0.16), transparent 55%),
+    radial-gradient(1000px circle at 100% 0%, rgba(27, 58, 52, 0.12), transparent 50%),
+    radial-gradient(700px circle at 50% 120%, rgba(194, 112, 47, 0.10), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* heritage serif for display headings (logo, page titles, h1–h3) */
+h1, h2, h3, .font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  letter-spacing: -0.015em;
+}
+
+::selection { background: var(--brand); color: #fff7ec; }
+
+/* ----------------------------- SCROLLBAR ----------------------------- */
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #c8b48d;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--brand); background-clip: content-box; }
+
+/* ----------------------------- FOCUS ----------------------------- */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ----------------------------- MOTION UTILITIES ----------------------------- */
+@keyframes cf-rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes cf-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cf-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes cf-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* page content gently rises in on load */
+.cf-page-enter { animation: cf-rise 0.6s var(--ease-out) both; }
+.cf-fade-in { animation: cf-fade 0.7s ease both; }
+.cf-float { animation: cf-float 7s var(--ease-out) infinite; }
+
+/* scroll-reveal (wired by ScrollReveal client component) */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+  will-change: transform, opacity;
+}
+[data-reveal].cf-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .cf-page-enter, .cf-fade-in, .cf-float { animation: none !important; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+
+/* ----------------------------- REUSABLE CLASSES ----------------------------- */
+/* soft, layered "heritage card" — opt-in depth without touching markup colors */
+.cf-card {
+  background: rgba(255, 252, 246, 0.86);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--color-gray-200);
+  box-shadow: 0 1px 2px rgba(31, 28, 21, 0.04), 0 18px 40px -24px rgba(31, 28, 21, 0.30);
+  transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+}
+.cf-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 1px 2px rgba(31, 28, 21, 0.04), 0 28px 56px -26px rgba(31, 28, 21, 0.38);
+}
+
+.cf-skeleton { position: relative; overflow: hidden; background: var(--color-gray-100); }
+.cf-skeleton::after {
+  content: "";
+  position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  animation: cf-shimmer 1.5s infinite;
 }
