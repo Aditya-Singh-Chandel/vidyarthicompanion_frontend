@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Upload, Loader2, Plus, Trash2, Check, CalendarRange, Sparkles } from 'lucide-react';
-import { parseDocument, saveSchedule, fileToDataUrl } from './profileApi';
+import { Upload, Loader2, Plus, Trash2, Check, CalendarRange, Sparkles, GraduationCap, Users } from 'lucide-react';
+import { parseDocument, saveSchedule, fileToDataUrl, updateFinancial } from './profileApi';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -19,7 +19,20 @@ export default function AcademicSetup({ profile, onSaved }) {
   const [slots, setSlots] = useState(() => (profile?.schedule?.length ? profile.schedule : []));
   const [editing, setEditing] = useState(!profile?.schedule?.length);
 
+  // Connected Class community (mirrors the Mess community connection).
+  const classCommunities = profile?.classCommunities ?? [];
+  const [classNodeId, setClassNodeId] = useState(profile?.primaryClassNodeId ?? '');
+  const [connecting, setConnecting] = useState(false);
+
   const aiEnabled = profile?.aiEnabled;
+
+  const handleConnectClass = async (nodeId) => {
+    setClassNodeId(nodeId);
+    setConnecting(true);
+    await updateFinancial({ primaryClassNodeId: nodeId || null });
+    setConnecting(false);
+    onSaved?.();
+  };
 
   const handleFile = async (file) => {
     if (!file) return;
@@ -62,6 +75,38 @@ export default function AcademicSetup({ profile, onSaved }) {
 
   return (
     <div className="space-y-4">
+      {/* Connect a Class community (mirrors the Mess community connection) */}
+      <div className="rounded-xl border border-violet-200 bg-violet-50/50 p-4">
+        <label className="flex items-center gap-2 text-sm font-semibold text-violet-800">
+          <GraduationCap className="h-4 w-4" /> Connected Class community
+        </label>
+        <p className="mt-1 text-xs text-violet-700/80">
+          Link your timetable to a Class community. Joining one syncs its official timetable to your profile;
+          admins keep it updated from the community page.
+        </p>
+        <div className="mt-2 flex items-center gap-2">
+          <select
+            value={classNodeId}
+            onChange={(e) => handleConnectClass(e.target.value)}
+            disabled={connecting}
+            className="w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-gray-900 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-100 disabled:opacity-60"
+          >
+            <option value="">Not connected</option>
+            {classCommunities.map((c) => (
+              <option key={c.nodeId} value={c.nodeId}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {connecting && <Loader2 className="h-4 w-4 animate-spin text-violet-600" />}
+        </div>
+        {classCommunities.length === 0 && (
+          <p className="mt-1.5 flex items-center gap-1 text-[11px] text-violet-700/70">
+            <Users className="h-3 w-3" /> Join a Class community with an invite code to connect one.
+          </p>
+        )}
+      </div>
+
       <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/40 p-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-indigo-800">
           <Sparkles className="h-4 w-4" /> Upload your official ERP timetable

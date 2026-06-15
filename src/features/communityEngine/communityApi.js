@@ -100,12 +100,51 @@ export async function joinByCode(code) {
     return {
       status: "joined",
       node: response.data?.data,
-      conflict: response.data?.conflict ?? null,
+      // On join, the community baseline (class timetable / mess menu) is adopted
+      // into the user's personal profile; this describes what was applied.
+      adopted: response.data?.adopted ?? null,
       message: response.data?.message,
     };
   } catch (error) {
     console.error("joinByCode failed:", error);
     return { status: "error", message: error?.response?.data?.message || "Invalid invite code." };
+  }
+}
+
+/** Today's per-meal mess votes (tallies + my votes + current time-gated slot). */
+export async function getMessVotes(nodeId) {
+  try {
+    const response = await apiClient.get(`/community/nodes/${nodeId}/mess-vote`);
+    return response.data?.data ?? null;
+  } catch (error) {
+    console.error("getMessVotes failed:", error);
+    return null;
+  }
+}
+
+/** Cast a vote on the current mess meal: verdict 'eatable' | 'leave'. */
+export async function castMessVote(nodeId, verdict, slot) {
+  try {
+    const response = await apiClient.post(`/community/nodes/${nodeId}/mess-vote`, { verdict, slot });
+    return response.data?.data ?? null;
+  } catch (error) {
+    console.error("castMessVote failed:", error);
+    return null;
+  }
+}
+
+/**
+ * Admin-only: update a community's baseline timetable (Academic) or menu (Mess).
+ * @param {string} nodeId
+ * @param {{schedule?:Array, menu?:object}} payload
+ */
+export async function updateBaseline(nodeId, payload) {
+  try {
+    const response = await apiClient.put(`/community/nodes/${nodeId}/baseline`, payload);
+    return response.data?.data ?? null;
+  } catch (error) {
+    console.error("updateBaseline failed:", error);
+    return null;
   }
 }
 

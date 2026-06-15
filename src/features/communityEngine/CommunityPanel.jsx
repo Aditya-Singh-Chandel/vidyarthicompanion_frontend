@@ -20,6 +20,10 @@ import {
   Inbox,
   UserCheck,
   Sparkles,
+  UtensilsCrossed,
+  Pencil,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 import { natureOf, statusOf } from './communityMeta';
 import {
@@ -29,7 +33,16 @@ import {
   getNodeMembers,
   approveRequest,
   promoteMember,
+  getMessVotes,
+  castMessVote,
+  updateBaseline,
 } from './communityApi';
+
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+function emptySlot() {
+  return { day: 'Monday', subject: '', timeStart: '', timeEnd: '', room: '' };
+}
 
 function formatWhen(iso) {
   const d = new Date(iso);
@@ -230,6 +243,198 @@ function ManagePanel({ nodeId, onChanged }) {
   );
 }
 
+/** Mess community per-meal voting (Eatable / Leave), time-gated to the current meal. */
+function MessMealVoting({ nodeId }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const d = await getMessVotes(nodeId);
+      if (cancelled) return;
+      setData(d);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [nodeId]);
+
+  const vote = async (verdict) => {
+    if (!data) return;
+    setBusy(true);
+    const res = await castMessVote(nodeId, verdict, data.currentSlot);
+    if (res) {
+      setData((prev) => ({
+        ...prev,
+        slots: res.slots,
+        myVotes: { ...prev.myVotes, [prev.currentSlot]: res.myVerdict },
+      }));
+    }
+    setBusy(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 rounded-2xl border border-amber-100 bg-amber-50/40 p-4 text-sm text-amber-700">
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading today&apos;s meal vote…
+      </div>
+    );
+  }
+  if (!data) return null;
+
+  const slot = data.currentSlot;
+  const tally = data.slots?.[slot] || { eatable: 0, leave: 0, total: 0 };
+  const myVote = data.myVotes?.[slot] || null;
+  const total = tally.eatable + tally.leave;
+  const eatablePct = total === 0 ? 50 : Math.round((tally.eatable / total) * 100);
+
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <p className="flex items-center gap-1.5 text-sm font-bold text-amber-900">
+          <UtensilsCrossed className="h-4 w-4" /> Today&apos;s {slot} — is it eatable?
+        </p>
+        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-inset ring-amber-200">
+          {total} {total === 1 ? 'vote' : 'votes'}
+        </span>
+      </div>
+      {data.currentDish && (
+        <p className="mt-1 text-xs text-amber-800">
+          On the menu: <span className="font-semibold">{data.currentDish}</span>
+        </p>
+      )}
+
+      <div className="mt-3 flex gap-2">
+        <button
+          onClick={() => vote('eatable')}
+          disabled={busy}
+          className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${
+            myVote === 'eatable' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+          }`}
+        >
+          <ThumbsUp className="h-4 w-4" /> Eatable
+        </button>
+        <button
+          onClick={() => vote('leave')}
+          disabled={busy}
+          className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${
+            myVote === 'leave' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
+          }`}
+        >
+          <ThumbsDown className="h-4 w-4" /> Leave
+        </button>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-rose-200">
+          <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${eatablePct}%` }} />
+        </div>
+        <span className="text-[11px] font-medium text-gray-500">
+          {tally.eatable} eatable · {tally.leave} leave
+        </span>
+      </div>
+      <p className="mt-2 text-[11px] text-amber-700/80">
+        A &quot;Leave&quot; majority nudges PocketBuddy to suggest a wallet-safe meal outside.
+      </p>
+    </div>
+  );
+}
+
+/** Admin-only editor for a Class community's baseline timetable. */
+function BaselineEditor({ node, onSaved }) {
+  const [slots, setSlots] = useState(() =>
+    node.baselineSchedule?.length ? node.baselineSchedule.map((s) => ({ ...s })) : [emptySlot()]
+  );
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const updateSlot = (i, patch) => setSlots((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
+  const removeSlot = (i) => setSlots((prev) => prev.filter((_, idx) => idx !== i));
+  const addSlot = () => setSlots((prev) => [...prev, emptySlot()]);
+
+  const handleSave = async () => {
+    const clean = slots.filter((s) => s.subject?.trim());
+    if (!clean.length) return;
+    setSaving(true);
+    const res = await updateBaseline(node.nodeId, { schedule: clean });
+    setSaving(false);
+    if (res) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      onSaved?.();
+    }
+  };
+
+  return (
+    <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-wide text-gray-400">Community timetable</p>
+      <p className="text-[11px] text-gray-500">
+        Members who join sync this timetable to their profile &amp; Master Calendar.
+      </p>
+      {slots.map((s, i) => (
+        <div key={i} className="grid grid-cols-12 gap-1.5">
+          <select
+            value={s.day}
+            onChange={(e) => updateSlot(i, { day: e.target.value })}
+            className="col-span-3 rounded-md border border-gray-300 px-1.5 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:outline-none"
+          >
+            {DAYS.map((d) => (
+              <option key={d} value={d}>
+                {d.slice(0, 3)}
+              </option>
+            ))}
+          </select>
+          <input
+            value={s.subject}
+            onChange={(e) => updateSlot(i, { subject: e.target.value })}
+            placeholder="Subject"
+            className="col-span-4 rounded-md border border-gray-300 px-2 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:outline-none"
+          />
+          <input
+            value={s.timeStart || ''}
+            onChange={(e) => updateSlot(i, { timeStart: e.target.value })}
+            placeholder="09:00"
+            className="col-span-2 rounded-md border border-gray-300 px-1.5 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:outline-none"
+          />
+          <input
+            value={s.room || ''}
+            onChange={(e) => updateSlot(i, { room: e.target.value })}
+            placeholder="Room"
+            className="col-span-2 rounded-md border border-gray-300 px-1.5 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => removeSlot(i)}
+            className="col-span-1 flex items-center justify-center rounded-md text-gray-400 hover:bg-rose-50 hover:text-rose-600"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ))}
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={addSlot}
+          className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+        >
+          <Plus className="h-3.5 w-3.5" /> Add slot
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+        >
+          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : saved ? <Check className="h-3.5 w-3.5" /> : null}
+          {saved ? 'Saved' : 'Save timetable'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function CommunityPanel({ nodeId, onMembershipChange }) {
   const [loading, setLoading] = useState(true);
   const [node, setNode] = useState(null);
@@ -237,6 +442,7 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
   const [voteBusyId, setVoteBusyId] = useState(null);
   const [copied, setCopied] = useState(false);
   const [showManage, setShowManage] = useState(false);
+  const [showBaseline, setShowBaseline] = useState(false);
 
   const load = useCallback(async () => {
     const data = await getNodeFeed(nodeId);
@@ -381,6 +587,14 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
                 </span>
               )}
             </button>
+            {node.nodeType === 'Academic' && (
+              <button
+                onClick={() => setShowBaseline((s) => !s)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-100"
+              >
+                <Pencil className="h-3.5 w-3.5" /> Edit timetable
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -394,6 +608,13 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
           }}
         />
       )}
+
+      {showBaseline && node.isAdmin && node.nodeType === 'Academic' && (
+        <BaselineEditor node={node} onSaved={load} />
+      )}
+
+      {/* Mess communities: per-meal Eatable / Leave voting for the current meal. */}
+      {node.nodeType === 'Mess' && <MessMealVoting nodeId={nodeId} />}
 
       {/* Verified flow banner for accountability communities */}
       {node.votingEnabled && (

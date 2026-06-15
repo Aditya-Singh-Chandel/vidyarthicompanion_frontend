@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Wallet, PiggyBank, Utensils, Dumbbell, Loader2, Check } from 'lucide-react';
+import { Wallet, PiggyBank, Utensils, Dumbbell, GraduationCap, Loader2, Check } from 'lucide-react';
 import { formatINR } from '@/features/pocketBuddy/pocketMeta';
 import { updateFinancial } from './profileApi';
 
@@ -10,11 +10,13 @@ export default function FinancialSetup({ profile, onSaved }) {
   const [safeBufferPct, setSafeBufferPct] = useState(profile?.financial?.safeBufferPct ?? 0);
   const [primaryMessNodeId, setPrimaryMessNodeId] = useState(profile?.primaryMessNodeId ?? '');
   const [primaryGymNodeId, setPrimaryGymNodeId] = useState(profile?.primaryGymNodeId ?? '');
+  const [primaryClassNodeId, setPrimaryClassNodeId] = useState(profile?.primaryClassNodeId ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const messCommunities = profile?.messCommunities ?? [];
   const gymCommunities = profile?.gymCommunities ?? [];
+  const classCommunities = profile?.classCommunities ?? [];
   const effective = Math.round(monthlyBudget * (1 - safeBufferPct / 100));
 
   const handleSave = async () => {
@@ -25,6 +27,7 @@ export default function FinancialSetup({ profile, onSaved }) {
       safeBufferPct: Number(safeBufferPct),
       primaryMessNodeId: primaryMessNodeId || null,
       primaryGymNodeId: primaryGymNodeId || null,
+      primaryClassNodeId: primaryClassNodeId || null,
     });
     setSaving(false);
     if (res) {
@@ -128,6 +131,26 @@ export default function FinancialSetup({ profile, onSaved }) {
           </select>
           {gymCommunities.length === 0 && (
             <p className="mt-1 text-[11px] text-gray-400">Join a Gym community for protein/fuel tips.</p>
+          )}
+        </div>
+        <div>
+          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-gray-700">
+            <GraduationCap className="h-4 w-4 text-violet-600" /> Primary Class community
+          </label>
+          <select
+            value={primaryClassNodeId}
+            onChange={(e) => setPrimaryClassNodeId(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+          >
+            <option value="">None selected</option>
+            {classCommunities.map((c) => (
+              <option key={c.nodeId} value={c.nodeId}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {classCommunities.length === 0 && (
+            <p className="mt-1 text-[11px] text-gray-400">Join a Class community to sync the timetable.</p>
           )}
         </div>
       </div>

@@ -6,6 +6,7 @@ import PresenceTracker from '@/features/presenceEngine/PresenceTracker';
 import MasterCalendar from '@/components/MasterCalendar';
 import DailyPlanWidget from '@/features/routineEngine/DailyPlanWidget';
 import NotificationsWidget from '@/features/routineEngine/NotificationsWidget';
+import DashboardRecommendation from '@/features/pocketBuddy/DashboardRecommendation';
 
 export default function DashboardPage() {
   return (
@@ -20,6 +21,17 @@ export default function DashboardPage() {
         <div className="mb-8">
           <DailyPlanWidget />
         </div>
+
+        {/* Wallet vs Wellness: eat-in / eat-out / conserve recommendation */}
+        <section aria-labelledby="recommendation-heading" className="mb-8">
+          <h2
+            id="recommendation-heading"
+            className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
+          >
+            Today&apos;s Food Recommendation
+          </h2>
+          <DashboardRecommendation />
+        </section>
 
         {/* Top Grid: Urgent Actions & Interventions */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
