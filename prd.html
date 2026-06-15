@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VidyarthiCompanion — HackOn with Amazon | Solution Document</title>
+<style>
+  /* ============================================================
+     EDITABLE STYLES — tweak colors/spacing here
+     ============================================================ */
+  :root {
+    --bg: #2b2c30;
+    --panel: #2f3034;
+    --ink: #d9d9d9;
+    --muted: #8a8d93;
+    --accent: #e8862e;        /* Amazon orange */
+    --table-head: #3a3b40;
+    --table-row: #303135;
+    --table-alt: #2a2b2f;
+    --border: #4a4b50;
+    --hint: #b9bcc2;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .page {
+    width: 794px;            /* A4 width @ 96dpi */
+    min-height: 1123px;      /* A4 height */
+    margin: 0 auto;
+    padding: 46px 64px;
+    background: var(--bg);
+    position: relative;
+  }
+  .page + .page { border-top: 1px solid #1f2023; }
+
+  /* ---------- Title page ---------- */
+  .cover-title {
+    text-align: center;
+    font-size: 46px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    margin: 90px 0 6px;
+  }
+  .cover-title .accent { color: var(--accent); }
+  .cover-sub {
+    text-align: center;
+    color: var(--ink);
+    font-size: 18px;
+    font-weight: 400;
+    margin: 0 0 4px;
+  }
+  .cover-meta {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin-bottom: 40px;
+  }
+  .rule { height: 1px; background: var(--accent); opacity: .6; margin: 18px 0 36px; }
+
+  /* ---------- Header running label ---------- */
+  .running {
+    text-align: right;
+    color: var(--muted);
+    font-size: 9.5px;
+    letter-spacing: .5px;
+    margin-bottom: 18px;
+  }
+
+  /* ---------- Section headings ---------- */
+  h2.section {
+    font-size: 21px;
+    font-weight: 700;
+    margin: 0 0 6px;
+  }
+  .jury {
+    color: var(--accent);
+    font-style: italic;
+    font-size: 11px;
+    margin: 0 0 18px;
+    padding-left: 12px;
+  }
+  .jury::before { content: "\2192  "; }
+  h3.sub {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 16px 0 4px;
+  }
+  .placeholder { color: var(--muted); font-style: italic; }
+  .body { margin: 0 0 6px; }
+  .hint { color: var(--hint); font-style: italic; }
+  .tip { color: var(--accent); font-style: italic; font-size: 10.5px; padding-left: 14px; }
+  .tip::before { content: "\2192  "; }
+  ul.feat { margin: 3px 0 5px; padding-left: 20px; }
+  ul.feat li { margin: 2px 0; }
+
+  /* ---------- Tables ---------- */
+  table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 11.5px; }
+  th, td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--table-head); font-weight: 700; }
+  td { background: var(--table-row); }
+  tr:nth-child(even) td { background: var(--table-alt); }
+  .kv td:first-child { background: var(--table-head); font-weight: 700; width: 34%; }
+
+  /* ---------- Architecture diagram ---------- */
+  pre.diagram {
+    background: #232427;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 9.5px;
+    line-height: 1.4;
+    color: var(--hint);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .links { margin-top: 40px; font-size: 12px; }
+  .links .label { font-weight: 700; }
+  .links a, .links .ph { color: var(--accent); font-style: italic; text-decoration: none; }
+
+  @media print {
+    body { background: var(--bg); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { margin: 0; width: 100%; min-height: 100vh; page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+  }
+  @page { size: A4; margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 — COVER ============ -->
+<section class="page">
+  <div class="cover-title">HackOn <span class="accent">with Amazon</span></div>
+  <div class="cover-sub">A Universe of Opportunity</div>
+  <div class="cover-meta">48-HOUR HACKATHON &nbsp;|&nbsp; SOLUTION DOCUMENT</div>
+  <div class="rule"></div>
+
+  <table class="kv">
+    <tr><td>Team Name</td><td class="placeholder">[Your Team Name]</td></tr>
+    <tr><td>Hackathon Theme</td><td class="placeholder">[Theme Name] — AI for Campus, Community &amp; Everyday Life</td></tr>
+    <tr><td>Date</td><td class="placeholder">[Submission Date]</td></tr>
+  </table>
+
+  <h3 class="sub">Team Members</h3>
+  <table>
+    <tr><th>Name</th><th>College / University</th><th>Role</th><th>Email</th></tr>
+    <tr><td class="placeholder">[Member 1]</td><td class="placeholder">[College]</td><td class="placeholder">[e.g., Backend Dev]</td><td class="placeholder">[Email]</td></tr>
+    <tr><td class="placeholder">[Member 2]</td><td class="placeholder">[College]</td><td class="placeholder">[e.g., Frontend Dev]</td><td class="placeholder">[Email]</td></tr>
+    <tr><td class="placeholder">[Member 3]</td><td class="placeholder">[College]</td><td class="placeholder">[e.g., ML Engineer]</td><td class="placeholder">[Email]</td></tr>
+    <tr><td class="placeholder">[Member 4]</td><td class="placeholder">[College]</td><td class="placeholder">[e.g., Designer/DevOps]</td><td class="placeholder">[Email]</td></tr>
+  </table>
+</section>
+
+<!-- ============ PAGE 2 — PROBLEM ============ -->
+<section class="page">
+  <div class="running">HackOn with Amazon | Solution Document</div>
+  <h2 class="section">1. Problem Statement &amp; Relevance</h2>
+  <p class="jury">Jury focus: Innovativeness (novelty, theme alignment) + Degree of Disruption (global relevance)</p>
+
+  <h3 class="sub">The Problem</h3>
+  <p class="body">Student life runs on chaos. Class schedules, deadlines, club events, attendance, transport, and exam stress are scattered across WhatsApp, email, portals, and spreadsheets, so important updates are constantly missed. In parallel, students silently struggle with budgeting, food costs, irregular sleep, and burnout, while existing apps each solve only one slice (finance <em>or</em> fitness <em>or</em> productivity).</p>
+
+  <h3 class="sub">Why It Matters</h3>
+  <p class="body">40M+ students in India alone (250M+ globally) live this fragmented, high-stress routine. A missed reschedule can cause an attendance shortfall; one untracked month can blow a tight budget; chronic sleep debt drives a documented campus mental-health crisis. The cost of inaction is lost grades, wasted money, and student wellbeing at scale.</p>
+  <p class="tip">Global scale: problems affecting hundreds of millions of students.</p>
+
+  <h3 class="sub">Theme Alignment</h3>
+  <p class="body">VidyarthiCompanion is purpose-built for "AI for Campus, Community &amp; Everyday Life." It fuses the prompt's flagship ideas, CampusFlow (AI OS for student life) and PocketBuddy (AI financial &amp; wellness assistant), into one community-verified operating system for schedules, money, and wellbeing.</p>
+
+  <h3 class="sub">What Makes This Novel</h3>
+  <p class="body">Existing assistants are single-user and trust-blind. Our angle is a <strong>community-verified, confidence-scored intelligence layer</strong>: lightweight "sensor" features silently ingest raw life data (notices, payments, sleep, GPS), and heavy "engine" features run deterministic math + AI intent-matching on top. Every academic update carries an <strong>AI confidence score</strong> and a <strong>trust-weighted crowd consensus score</strong> (Echo/Flag votes), so a rescheduled class auto-corrects for an entire batch with near-zero hallucination, something no calendar, finance, or wellness app does today.</p>
+</section>
+
+<!-- ============ PAGE 3 — CUSTOMER & SOLUTION ============ -->
+<section class="page">
+  <div class="running">HackOn with Amazon | Solution Document</div>
+  <h2 class="section">2. Customer &amp; Solution</h2>
+  <p class="jury">Jury focus: Quality of Presentation (clarity) + Quality of Implementation (working prototype)</p>
+
+  <h3 class="sub">Target Customer</h3>
+  <p class="body">College and hostel students (17&ndash;24) juggling academics, a tight monthly budget, and irregular sleep across noisy, multi-channel information sources. They need <em>one</em> trusted place that tells them what to do next, what's safe to spend, and when to rest, without manual data entry.</p>
+
+  <h3 class="sub">How We Solve It</h3>
+  <p class="body">A web app built around two primitives, Users and Communities, where minor "sensor" features feed major "intelligence engines":</p>
+  <ul class="feat">
+    <li><strong>Verified Campus Calendar:</strong> AI parses a screenshot/photo of a timetable or notice (OCR) into confidence-scored events; the batch verifies them via trust-weighted Echo/Flag consensus, so one update syncs to everyone.</li>
+    <li><strong>PocketBuddy Finance + Wellness Hub:</strong> Ingests payment alerts, auto-categorizes vendors via a crowdsourced merchant graph, tracks budget runway, and fuses mess-food votes + wallet balance into a "Wallet-vs-Wellness" recommendation (eat-in / treat / conserve).</li>
+    <li><strong>Routine, Empathy &amp; Departure Engines:</strong> A nightly-recalculated baseline routine prioritizes tasks (exams first), a Safe-Skip burnout calculus advises rest when attendance is safe, and a geo-aware "Leave Now" alert times departure from the user's exact location.</li>
+  </ul>
+
+  <h3 class="sub">User Workflow</h3>
+  <p class="body">Sign up &rarr; join batch/mess/gym communities &rarr; snap a timetable or notice photo &rarr; AI extracts events (confidence-scored) &rarr; batch verifies via Echo/Flag &rarr; verified plan flows into Today's Plan, Calendar, PocketBuddy budget &amp; Wellness tracker &rarr; proactive nudges (leave now, order out, rest, study for test).</p>
+  <p class="tip">A clear visual here directly impacts your Presentation score.</p>
+
+  <h3 class="sub">Working Prototype</h3>
+  <p class="body">End-to-end working web app: Next.js frontend + Express/MongoDB backend + Gemini AI. Includes auth, communities (join-by-code, mess/class/gym nodes), consensus voting, AI OCR override engine, prioritized daily plan, master calendar, PocketBuddy wallet ingest/tag/recommendations, wellness tracker, empathy/safe-skip, and presence + transit departure alerts.</p>
+  <p class="body"><strong>Demo:</strong> <span class="placeholder">[Video / Deployed URL]</span></p>
+  <p class="tip">End-to-end working prototype with evidence = highest implementation score.</p>
+</section>
+
+<!-- ============ PAGE 4 — TECH ARCHITECTURE ============ -->
+<section class="page">
+  <div class="running">HackOn with Amazon | Solution Document</div>
+  <h2 class="section">3. Tech Architecture &amp; Scaling</h2>
+  <p class="jury">Jury focus: Tech Architecture (complexity, algorithms, APIs, code quality) + Scalability (depth, interconnectedness)</p>
+
+  <h3 class="sub">Architecture</h3>
+  <p class="body">A decoupled, event-driven <strong>sensor &rarr; engine</strong> design. Minor features only ingest and structure raw data; major features extract that data, run deterministic logic or AI intent-matching, and output single-tap Zero-UI Action Cards.</p>
+  <pre class="diagram">[ Sensors / Ingestors ]            [ Intelligence Engines ]              [ Presentation ]
+ Notice OCR  --,                    1 Dynamic Baseline Routine --,
+ Consensus   --|                    2 Verified Override         --|
+ Sleep/Motion--|  --> MongoDB  -->  3 Empathy Mesh / Safe-Skip  --|  --> Zero-UI
+ Geo-Poller  --|   (shared models)  4 PocketBuddy x Pay Hub     --|      Action Cards
+ Attendance  --|                    5 Community Graph           --|     (React / Next.js)
+ Pay Webhook --|                    6 Ground-Truth Retrieval    --|
+ Mess Ticker --'                    7 Spatial-Temporal Departure--'
+                                     (AI intent-match via Gemini; Bedrock-ready)</pre>
+
+  <h3 class="sub">Tech Stack</h3>
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Why</th></tr>
+    <tr><td>Frontend</td><td>Next.js 16 (App Router), React 19, Tailwind v4, Zustand</td><td>Modern SSR/CSR, feature-sliced UI, lightweight global state</td></tr>
+    <tr><td>Backend</td><td>Node.js + Express 5 (REST /api/v1), JWT + bcrypt</td><td>Fast, decoupled engine routes; stateless token auth</td></tr>
+    <tr><td>Data / ML</td><td>MongoDB + Mongoose 9; Google Gemini 2.5 Flash (OCR, intent, RAG)</td><td>Flexible write-schema for telemetry &amp; votes; vision OCR + grounded Q&amp;A</td></tr>
+    <tr><td>Payments</td><td>Wallet model — conceptual balance + txn source (<em>Amazon Pay-ready</em>)</td><td>Budget tracking today; scalable to real Amazon Pay APIs</td></tr>
+    <tr><td>Infra / Jobs</td><td>node-schedule (alarms, nightly rebuild); Amazon Bedrock / Lambda / DynamoDB / S3-ready</td><td>Time-based alerts &amp; recompute; AWS-native path for scale</td></tr>
+  </table>
+
+  <h3 class="sub">Key Algorithms &amp; Complexity</h3>
+  <ul class="feat">
+    <li><strong>Trust-weighted Consensus:</strong> Echo(+1)/Flag(-1) votes snapshot each voter's trustScore; majority verify/reject promotes only verified events to the calendar (idempotent via unique {eventId,userId} index).</li>
+    <li><strong>AI Confidence + Hallucination Guardrail:</strong> Gemini OCR returns 0&ndash;1 confidence per event; duplicates merged; past-year date hallucinations caught and corrected.</li>
+    <li><strong>Safe-Skip Burnout Calculus:</strong> weighted average of last-24h lifestyle logs vs. attendance buffer; fires anonymous Empathy Nudge only when exhaustion is high and attendance is safe.</li>
+    <li><strong>Crowdsourced Merchant Graph:</strong> one user's vendor tag backfills categorization for all matching transactions campus-wide (network effect).</li>
+    <li><strong>Haversine Departure ETA:</strong> per-mode (walk/cycle/auto) travel time from live GPS to next building; suppresses alert if already on-site.</li>
+  </ul>
+
+  <h3 class="sub">Scaling Strategy</h3>
+  <p class="body">Stateless Express engines scale horizontally behind a load balancer; MongoDB shards on userId/nodeId for batch-local reads. AI calls plug into <strong>Amazon Bedrock</strong>, write-heavy telemetry fits <strong>Lambda + DynamoDB</strong>, notice/menu images move to <strong>Amazon S3</strong>, and payments scale onto <strong>Amazon Pay</strong>. The community graph compounds value per campus, designed for 100x&ndash;1000x growth to nationwide multi-campus federation.</p>
+</section>
+
+<!-- ============ PAGE 5 — FUTURE VISION ============ -->
+<section class="page">
+  <div class="running">HackOn with Amazon | Solution Document</div>
+  <h2 class="section">4. Future Vision</h2>
+  <p class="jury">Jury focus: Futuristic Vision (long-term thinking, multi-segment expansion, value impact)</p>
+
+  <h3 class="sub">Where This Goes</h3>
+  <p class="body">In 1&ndash;3 years VidyarthiCompanion becomes the default operating system for student life, every campus running on community-verified schedules, budget-aware spending, and proactive wellbeing nudges, with the AI quietly handling the chaos so students focus on learning.</p>
+
+  <h3 class="sub">Roadmap</h3>
+  <table>
+    <tr><th>Horizon</th><th>Milestone</th><th>Impact</th></tr>
+    <tr><td>0&ndash;3 mo</td><td>Polish core engines; real Amazon Pay + UPI ingestion; mobile-friendly PWA</td><td>First pilot batch (1 college, ~2k students)</td></tr>
+    <tr><td>3&ndash;6 mo</td><td>Native sleep/step sensors; push notifications; multi-campus onboarding</td><td>10+ colleges, ~50k students</td></tr>
+    <tr><td>6&ndash;12 mo</td><td>Amazon Bedrock-native AI; carpool/meal synergies; placement-prep module</td><td>Nationwide, 500k+ students</td></tr>
+  </table>
+
+  <h3 class="sub">Multi-Segment Expansion</h3>
+  <p class="body">Education &rarr; Hostels/PG living &rarr; Logistics (carpool/transit) &rarr; Campus commerce (mess/cafe/merchant graph) &rarr; Corporate onboarding &amp; co-working communities. The same sensor-engine-consensus core generalizes anywhere groups coordinate schedules, money, and wellbeing.</p>
+  <p class="tip">Clear multi-segment strategy (education &gt; living &gt; logistics &gt; commerce) scores highest.</p>
+
+  <h3 class="sub">Value Impact</h3>
+  <p class="body">Targeting 250M+ students globally. Per student: fewer missed deadlines, 10&ndash;20% monthly savings via budget guardrails, and measurable burnout reduction. At scale this is a verified-coordination layer worth hundreds of millions in saved time, money, and improved outcomes, plus Amazon Pay transaction volume and Amazon Bedrock consumption.</p>
+
+  <div class="rule"></div>
+  <div class="links"><span class="label">Links:</span> GitHub <span class="ph">[URL]</span> &nbsp;|&nbsp; Demo Video <span class="ph">[URL]</span> &nbsp;|&nbsp; Live App <span class="ph">[URL]</span></div>
+</section>
+
+</body>
+</html>
