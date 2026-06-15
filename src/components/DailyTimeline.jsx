@@ -79,9 +79,9 @@ export default function DailyTimeline({ schedule = [] }) {
                         </div>
                       </div>
                       
-                      {event.isFlagged && (
-                        <span className="mt-2 inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
-                          Consensus Flag: Overcrowded
+                      {event.tentative && (
+                        <span className="mt-2 inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20">
+                          Tentative
                         </span>
                       )}
                     </div>

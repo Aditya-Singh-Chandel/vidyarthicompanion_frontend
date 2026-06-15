@@ -45,14 +45,16 @@ function toTimelineItem(ev) {
   const time = Number.isNaN(d.getTime())
     ? 'Time TBD'
     : d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  const isMeetup = ev.kind === 'meetup';
   return {
     id: ev.id,
     title: ev.eventName,
     time,
     sortKey: Number.isNaN(d.getTime()) ? 24 * 60 : d.getHours() * 60 + d.getMinutes(),
     location: ev.location || 'TBD',
-    type: 'academic',
-    isFlagged: ev.status === 'pending',
+    type: isMeetup ? 'community' : 'academic',
+    // A proposed Meet Up is not confirmed yet -> show a "Tentative" tag.
+    tentative: ev.status === 'pending',
   };
 }
 
@@ -119,7 +121,7 @@ export default function MasterCalendar() {
     return out;
   }, [schedule, currentDate]);
 
-  // Merge consensus events with the recurring class schedule for any given day.
+  // Merge verified events + Meet Ups with the recurring class schedule for any given day.
   const combinedFor = (key) => {
     const merged = [...(recurringByDate[key] || []), ...(eventsByDate[key] || [])];
     return merged.sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0));
