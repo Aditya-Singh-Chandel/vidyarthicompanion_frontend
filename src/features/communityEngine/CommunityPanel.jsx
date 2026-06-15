@@ -34,6 +34,8 @@ import {
   CalendarCheck,
   Clock3,
   UserRound,
+  CalendarPlus,
+  X,
 } from 'lucide-react';
 import { natureOf, statusOf } from './communityMeta';
 import {
@@ -48,6 +50,9 @@ import {
   updateBaseline,
   getNodeBaseline,
   getMeetupSlots,
+  scheduleMeetup,
+  respondMeetup,
+  cancelMeetup,
 } from './communityApi';
 import { getMealPlanTier } from '@/features/pocketBuddy/pocketApi';
 import { formatINR } from '@/features/pocketBuddy/pocketMeta';
@@ -67,6 +72,13 @@ function formatWhen(iso) {
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+/** Whether a free-slot row corresponds to a meetup's booked slot. */
+function meetupSlotMatches(slot, meetup) {
+  if (!slot || !meetup?.slot) return false;
+  const sameDay = new Date(slot.date).toDateString() === new Date(meetup.slot.date).toDateString();
+  return sameDay && slot.start === meetup.slot.start && slot.end === meetup.slot.end;
 }
 
 /** A small echoes-vs-flags consensus bar. */
@@ -461,12 +473,17 @@ function MealPlanSuggestion({ nodeId, refreshKey }) {
   );
 }
 
-/** Empathy Mesh: member list + per-member "Meet Up" free-slot finder. */
-function EmpathyMeshPanel({ nodeId }) {
+/** Empathy Mesh: member list + per-member "Meet Up" free-slot finder & scheduler. */
+function EmpathyMeshPanel({ nodeId, openMeetupFor }) {
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState([]);
-  const [busyId, setBusyId] = useState(null);
-  const [result, setResult] = useState(null); // { memberId, member, slots }
+  const [busyId, setBusyId] = useState(null); // member row being opened
+  const [selectedMember, setSelectedMember] = useState(null); // { userId, name }
+  const [slotsData, setSlotsData] = useState(null); // { member, slots, windowDays, activeMeetup }
+  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [acting, setActing] = useState(false);
+  const [err, setErr] = useState('');
+  const autoOpenedFor = React.useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -481,14 +498,89 @@ function EmpathyMeshPanel({ nodeId }) {
     };
   }, [nodeId]);
 
-  // Find a shared free slot with a fellow member. The backend rejects meeting
-  // yourself, so the action is safe for every row.
-  const findMeetUp = async (memberId) => {
-    setBusyId(memberId);
-    setResult(null);
-    const data = await getMeetupSlots(nodeId, memberId);
-    setBusyId(null);
-    if (data) setResult({ memberId, ...data });
+  // Open a member's shared free slots + any active Meet Up between us.
+  const openMeetUp = useCallback(
+    async (member) => {
+      setBusyId(member.userId);
+      setErr('');
+      setSelectedMember(member);
+      setSlotsLoading(true);
+      setSlotsData(null);
+      const data = await getMeetupSlots(nodeId, member.userId);
+      setBusyId(null);
+      setSlotsLoading(false);
+      if (data) setSlotsData(data);
+    },
+    [nodeId]
+  );
+
+  // Silent re-fetch (used after actions + by the live poll) so both sides see
+  // responses without a manual refresh.
+  const refreshSlots = useCallback(async () => {
+    if (!selectedMember) return;
+    const data = await getMeetupSlots(nodeId, selectedMember.userId);
+    if (data) setSlotsData(data);
+  }, [nodeId, selectedMember]);
+
+  // Deep link from the dashboard burnout card: auto-open the named member.
+  // Deferred via a timer so we don't call setState synchronously in the effect.
+  useEffect(() => {
+    if (!openMeetupFor || !members.length) return undefined;
+    if (autoOpenedFor.current === openMeetupFor) return undefined;
+    const member = members.find((m) => m.userId === openMeetupFor);
+    if (!member) return undefined;
+    autoOpenedFor.current = openMeetupFor;
+    const t = setTimeout(() => openMeetUp(member), 0);
+    return () => clearTimeout(t);
+  }, [openMeetupFor, members, openMeetUp]);
+
+  // Near-instant updates: poll the open conversation every 12s.
+  useEffect(() => {
+    if (!selectedMember) return undefined;
+    const id = setInterval(refreshSlots, 12000);
+    return () => clearInterval(id);
+  }, [selectedMember, refreshSlots]);
+
+  const applyResult = (res) => {
+    if (res?.error) {
+      setErr(res.error);
+      return false;
+    }
+    setErr('');
+    return true;
+  };
+
+  const doSchedule = async (slot) => {
+    setActing(true);
+    const res = await scheduleMeetup(nodeId, selectedMember.userId, slot);
+    if (applyResult(res)) setSlotsData((prev) => ({ ...prev, activeMeetup: res.data }));
+    setActing(false);
+  };
+
+  const doCancel = async () => {
+    const am = slotsData?.activeMeetup;
+    if (!am) return;
+    setActing(true);
+    const res = await cancelMeetup(am.meetupId);
+    if (applyResult(res)) {
+      setSlotsData((prev) => ({ ...prev, activeMeetup: null }));
+      refreshSlots();
+    }
+    setActing(false);
+  };
+
+  const doRespond = async (action, slot) => {
+    const am = slotsData?.activeMeetup;
+    if (!am) return;
+    setActing(true);
+    const res = await respondMeetup(am.meetupId, action, slot);
+    if (applyResult(res)) {
+      // Reject leaves no active meetup; accept/reschedule update it in place.
+      const updated = action === 'reject' || res.data?.status === 'rejected' ? null : res.data;
+      setSlotsData((prev) => ({ ...prev, activeMeetup: updated }));
+      refreshSlots();
+    }
+    setActing(false);
   };
 
   if (loading) {
@@ -499,6 +591,9 @@ function EmpathyMeshPanel({ nodeId }) {
     );
   }
 
+  const am = slotsData?.activeMeetup || null;
+  const amLabel = am ? `${am.slot.dateLabel} · ${am.slot.start}–${am.slot.end}` : '';
+
   return (
     <div className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
       <p className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
@@ -506,57 +601,170 @@ function EmpathyMeshPanel({ nodeId }) {
       </p>
       <p className="mt-0.5 text-xs text-gray-500">
         Tap <span className="font-semibold text-emerald-700">Meet Up</span> to find a free slot in the next 3 days
-        (8am–11pm) you both share.
+        (8am–11pm) you both share, then schedule one.
       </p>
 
       <ul className="mt-3 space-y-1.5">
-        {members.map((m) => (
-          <li
-            key={m.userId}
-            className="flex items-center gap-3 rounded-xl bg-gray-50/70 px-3 py-2 ring-1 ring-inset ring-gray-200/70"
-          >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-              <UserRound className="h-4 w-4" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-1.5">
-                <span className="truncate text-sm font-semibold text-gray-800">{m.name}</span>
-                {m.isCr && <Crown className="h-3 w-3 shrink-0 text-amber-500" />}
-              </span>
-            </span>
-            <button
-              onClick={() => findMeetUp(m.userId)}
-              disabled={busyId === m.userId}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+        {members.map((m) => {
+          const isSelected = selectedMember?.userId === m.userId;
+          return (
+            <li
+              key={m.userId}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2 ring-1 ring-inset ${
+                isSelected ? 'bg-emerald-50 ring-emerald-200' : 'bg-gray-50/70 ring-gray-200/70'
+              }`}
             >
-              {busyId === m.userId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CalendarCheck className="h-3.5 w-3.5" />}
-              Meet Up
-            </button>
-          </li>
-        ))}
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                <UserRound className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-semibold text-gray-800">{m.name}</span>
+                  {m.isCr && <Crown className="h-3 w-3 shrink-0 text-amber-500" />}
+                </span>
+              </span>
+              <button
+                onClick={() => openMeetUp(m)}
+                disabled={busyId === m.userId}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold disabled:opacity-50 ${
+                  isSelected
+                    ? 'border-emerald-300 bg-emerald-600 text-white hover:bg-emerald-700'
+                    : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                }`}
+              >
+                {busyId === m.userId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CalendarCheck className="h-3.5 w-3.5" />}
+                Meet Up
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
-      {result && (
+      {selectedMember && (
         <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
           <p className="text-xs font-bold text-emerald-800">
-            Free slots with {result.member?.name || 'this member'} (next {result.windowDays} days)
+            Schedule a Meet Up with {selectedMember.name}
+            {slotsData ? ` (next ${slotsData.windowDays} days)` : ''}
           </p>
-          {result.slots.length === 0 ? (
-            <p className="mt-1 text-xs text-emerald-700/80">
-              No shared free slot found in the next {result.windowDays} days — your schedules are packed.
+
+          {err && <p className="mt-1 text-xs font-medium text-rose-600">{err}</p>}
+
+          {/* Active Meet Up management */}
+          {am && (
+            <div className="mt-2 rounded-lg border border-emerald-300 bg-white p-2.5">
+              {am.status === 'accepted' ? (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800">
+                    <CalendarCheck className="h-3.5 w-3.5" /> Confirmed with {am.otherName} · {amLabel}
+                  </p>
+                  <button
+                    onClick={doCancel}
+                    disabled={acting}
+                    className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
+                  >
+                    <X className="h-3.5 w-3.5" /> Cancel
+                  </button>
+                </div>
+              ) : am.isPendingOnMe ? (
+                <div>
+                  <p className="text-xs text-emerald-800">
+                    <span className="font-semibold">{am.otherName}</span> proposed {amLabel}.
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => doRespond('accept')}
+                      disabled={acting}
+                      className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      <Check className="h-3.5 w-3.5" /> Accept
+                    </button>
+                    <button
+                      onClick={() => doRespond('reject')}
+                      disabled={acting}
+                      className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
+                    >
+                      <X className="h-3.5 w-3.5" /> Decline
+                    </button>
+                    <span className="inline-flex items-center text-[11px] text-emerald-700/80">
+                      …or pick a new time below to propose back.
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="inline-flex items-center gap-1.5 text-xs text-emerald-800">
+                    <Clock3 className="h-3.5 w-3.5" /> You proposed {amLabel}. Waiting for {am.otherName}.
+                  </p>
+                  <button
+                    onClick={doCancel}
+                    disabled={acting}
+                    className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
+                  >
+                    <X className="h-3.5 w-3.5" /> Cancel slot
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Free-slot list */}
+          {slotsLoading ? (
+            <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-emerald-700">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Finding shared free time…
+            </p>
+          ) : !slotsData || slotsData.slots.length === 0 ? (
+            <p className="mt-2 text-xs text-emerald-700/80">
+              No shared free slot found in the next {slotsData?.windowDays || 3} days — your schedules are packed.
             </p>
           ) : (
-            <ul className="mt-2 space-y-1">
-              {result.slots.slice(0, 6).map((s, i) => (
-                <li key={i} className="flex items-center gap-2 text-xs text-emerald-900">
-                  <Clock3 className="h-3 w-3 text-emerald-500" />
-                  <span className="font-semibold">{s.dateLabel}</span>
-                  <span>
-                    {s.start}–{s.end}
-                  </span>
-                  <span className="text-emerald-700/70">({Math.round(s.durationMin / 60 * 10) / 10}h free)</span>
-                </li>
-              ))}
+            <ul className="mt-2 space-y-1.5">
+              {slotsData.slots.slice(0, 8).map((s, i) => {
+                const matched = am && meetupSlotMatches(s, am);
+                const canReschedule = am && am.status === 'proposed' && am.isPendingOnMe;
+                return (
+                  <li
+                    key={i}
+                    className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs ring-1 ring-inset ${
+                      matched ? 'bg-emerald-100 ring-emerald-300' : 'bg-white ring-emerald-100'
+                    }`}
+                  >
+                    <Clock3 className="h-3 w-3 shrink-0 text-emerald-500" />
+                    <span className="font-semibold text-emerald-900">{s.dateLabel}</span>
+                    <span className="text-emerald-900">
+                      {s.start}–{s.end}
+                    </span>
+                    <span className="text-emerald-700/70">({Math.round((s.durationMin / 60) * 10) / 10}h free)</span>
+
+                    <span className="ml-auto shrink-0">
+                      {!am ? (
+                        <button
+                          onClick={() => doSchedule(s)}
+                          disabled={acting}
+                          className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                        >
+                          <CalendarCheck className="h-3.5 w-3.5" /> Schedule Meet Up
+                        </button>
+                      ) : matched ? (
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white">
+                          <Check className="h-3.5 w-3.5" /> Selected
+                        </span>
+                      ) : canReschedule ? (
+                        <button
+                          onClick={() => doRespond('reschedule', s)}
+                          disabled={acting}
+                          className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-white px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                        >
+                          <CalendarPlus className="h-3.5 w-3.5" /> Propose this time
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-400">
+                          <Lock className="h-3.5 w-3.5" /> Locked
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -865,7 +1073,7 @@ function BaselineViewer({ nodeId, kind }) {
   );
 }
 
-export default function CommunityPanel({ nodeId, onMembershipChange }) {
+export default function CommunityPanel({ nodeId, onMembershipChange, openMeetupFor }) {
   const [loading, setLoading] = useState(true);
   const [node, setNode] = useState(null);
   const [updates, setUpdates] = useState([]);
@@ -1085,7 +1293,7 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
       )}
 
       {/* Empathy Mesh: member list + Meet Up free-slot finder. */}
-      {node.nodeType === 'Empathy' && <EmpathyMeshPanel nodeId={nodeId} />}
+      {node.nodeType === 'Empathy' && <EmpathyMeshPanel nodeId={nodeId} openMeetupFor={openMeetupFor} />}
 
       {/* Verified flow banner for accountability communities */}
       {node.votingEnabled && (

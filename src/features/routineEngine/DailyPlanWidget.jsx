@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import {
   AlertTriangle,
   FileClock,
@@ -15,8 +16,14 @@ import {
   CheckCircle2,
   Clock3,
   MapPin,
+  CalendarCheck,
+  CalendarClock,
+  Check,
+  X,
+  ArrowRight,
 } from 'lucide-react';
 import { getDailyPlan } from './routineApi';
+import { respondMeetup } from '@/features/communityEngine/communityApi';
 
 // Visual treatment per card type.
 const TYPE_STYLES = {
@@ -27,6 +34,7 @@ const TYPE_STYLES = {
   event: { Icon: Users, ring: 'border-l-purple-500', chip: 'bg-purple-100 text-purple-700', label: 'Event' },
   wellbeing: { Icon: HeartPulse, ring: 'border-l-rose-500', chip: 'bg-rose-100 text-rose-700', label: 'Wellbeing' },
   empathy_alert: { Icon: HeartHandshake, ring: 'border-l-pink-500', chip: 'bg-pink-100 text-pink-700', label: 'Empathy Mesh' },
+  meetup_invite: { Icon: CalendarClock, ring: 'border-l-emerald-500', chip: 'bg-emerald-100 text-emerald-700', label: 'Meet Up' },
   budget: { Icon: Wallet, ring: 'border-l-amber-500', chip: 'bg-amber-100 text-amber-700', label: 'Budget' },
 };
 
@@ -52,11 +60,16 @@ function relativeDay(iso) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-function PlanCard({ card }) {
+function PlanCard({ card, onRespond, busy }) {
   const style = TYPE_STYLES[card.type] || TYPE_STYLES.class;
   const Icon = style.Icon;
   const when = relativeDay(card.date);
   const statusBadge = card.kind === 'event' ? STATUS_BADGE[card.status] : null;
+
+  // Reach-out card -> deep link into the member's Meet Up scheduler.
+  const showSchedule = card.type === 'empathy_alert' && card.action === 'meet_up' && card.nodeId && card.memberId;
+  // Incoming invite -> accept / decline inline, or change time in the community.
+  const isInvite = card.type === 'meetup_invite' && card.meetupId;
 
   return (
     <li className={`rounded-lg border border-gray-100 border-l-4 ${style.ring} bg-white p-4 shadow-sm`}>
@@ -90,6 +103,40 @@ function PlanCard({ card }) {
               {typeof card.consensusScore === 'number' ? ` · consensus ${card.consensusScore}` : ''}
             </span>
           )}
+
+          {showSchedule && (
+            <Link
+              href={`/community?node=${encodeURIComponent(card.nodeId)}&member=${encodeURIComponent(card.memberId)}&meetup=1`}
+              className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-pink-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-pink-700"
+            >
+              <CalendarCheck className="h-3.5 w-3.5" /> Schedule Meet Up
+            </Link>
+          )}
+
+          {isInvite && (
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              <button
+                onClick={() => onRespond(card.meetupId, 'accept')}
+                disabled={busy}
+                className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Accept
+              </button>
+              <button
+                onClick={() => onRespond(card.meetupId, 'reject')}
+                disabled={busy}
+                className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
+              >
+                <X className="h-3.5 w-3.5" /> Decline
+              </button>
+              <Link
+                href={`/community?node=${encodeURIComponent(card.nodeId)}&member=${encodeURIComponent(card.otherUserId)}&meetup=1`}
+                className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50"
+              >
+                Change time <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </li>
@@ -100,6 +147,13 @@ export default function DailyPlanWidget() {
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState(null);
   const [now, setNow] = useState(null);
+  const [actingId, setActingId] = useState(null);
+
+  const load = useCallback(async () => {
+    const data = await getDailyPlan();
+    setPlan(data);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,6 +167,27 @@ export default function DailyPlanWidget() {
       cancelled = true;
     };
   }, []);
+
+  // Near-instant updates: re-poll the plan so a Meet Up scheduled/answered
+  // elsewhere shows up here without a manual refresh.
+  useEffect(() => {
+    const id = setInterval(() => {
+      getDailyPlan().then((data) => {
+        if (data) setPlan(data);
+      });
+    }, 15000);
+    return () => clearInterval(id);
+  }, []);
+
+  const handleRespond = useCallback(
+    async (meetupId, action) => {
+      setActingId(meetupId);
+      await respondMeetup(meetupId, action);
+      await load();
+      setActingId(null);
+    },
+    [load]
+  );
 
   // Live clock (set via timers so it never runs setState synchronously in the effect).
   useEffect(() => {
@@ -186,7 +261,12 @@ export default function DailyPlanWidget() {
 
           <ul className="space-y-3">
             {visibleCards.map((card) => (
-              <PlanCard key={card.id} card={card} />
+              <PlanCard
+                key={card.id}
+                card={card}
+                onRespond={handleRespond}
+                busy={actingId === card.meetupId}
+              />
             ))}
           </ul>
         </>

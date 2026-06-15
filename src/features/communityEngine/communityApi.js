@@ -237,6 +237,55 @@ export async function getMeetupSlots(nodeId, memberId) {
 }
 
 /**
+ * Empathy Mesh: book a shared free slot with a fellow member. Creates a
+ * tentative ('proposed') meetup the other member must accept/decline/reschedule.
+ * @param {string} nodeId
+ * @param {string} memberId - the other participant
+ * @param {object} slot - one of the free slots returned by getMeetupSlots
+ * @returns {Promise<{data:object}|{error:string}>} meetup DTO or an error message
+ */
+export async function scheduleMeetup(nodeId, memberId, slot) {
+  try {
+    const response = await apiClient.post(
+      `/community/nodes/${nodeId}/meetup/${memberId}/schedule`,
+      { slot }
+    );
+    return { data: response.data?.data ?? null };
+  } catch (error) {
+    console.error("scheduleMeetup failed:", error);
+    return { error: error?.response?.data?.message || "Could not schedule the Meet Up." };
+  }
+}
+
+/**
+ * Respond to a meetup the current user must act on.
+ * @param {string} meetupId
+ * @param {'accept'|'reject'|'reschedule'} action
+ * @param {object} [slot] - required when action is 'reschedule'
+ * @returns {Promise<{data:object}|{error:string}>}
+ */
+export async function respondMeetup(meetupId, action, slot) {
+  try {
+    const response = await apiClient.post(`/community/meetup/${meetupId}/respond`, { action, slot });
+    return { data: response.data?.data ?? null };
+  } catch (error) {
+    console.error("respondMeetup failed:", error);
+    return { error: error?.response?.data?.message || "Could not update the Meet Up." };
+  }
+}
+
+/** Cancel a still-open meetup (either participant). */
+export async function cancelMeetup(meetupId) {
+  try {
+    const response = await apiClient.post(`/community/meetup/${meetupId}/cancel`);
+    return { data: response.data?.data ?? null };
+  } catch (error) {
+    console.error("cancelMeetup failed:", error);
+    return { error: error?.response?.data?.message || "Could not cancel the Meet Up." };
+  }
+}
+
+/**
  * A community's own column of updates (all statuses) plus its metadata.
  * @returns {Promise<{node:object, updates:Array}|null>}
  */

@@ -35,6 +35,9 @@ export default function CommunityPage() {
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [adoptable, setAdoptable] = useState(null);
+  // Deep link (e.g. from a dashboard burnout card): ?node=…&member=… opens that
+  // member's Meet Up inside the named community.
+  const [deepLink, setDeepLink] = useState({ node: null, member: null });
   // Profile-driven pins for the three fixed communities (Mess / Class / Empathy).
   const [primary, setPrimary] = useState({ mess: null, class: null, empathy: null });
 
@@ -61,7 +64,19 @@ export default function CommunityPage() {
       if (cancelled) return;
       setMyNodes(mine);
       setLoading(false);
-      setSelectedNodeId((cur) => cur || mine[0]?.nodeId || null);
+
+      // Deep link (?node=…&member=…) — read client-side here (inside the async
+      // callback) to avoid both the useSearchParams prerender bailout and a
+      // synchronous setState in the effect body. Drives node selection + the
+      // Meet Up auto-open passed down to CommunityPanel.
+      let dl = { node: null, member: null };
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        dl = { node: params.get('node'), member: params.get('member') };
+        if (dl.node || dl.member) setDeepLink(dl);
+      }
+      const preferred = dl.node && mine.some((n) => n.nodeId === dl.node) ? dl.node : null;
+      setSelectedNodeId((cur) => cur || preferred || mine[0]?.nodeId || null);
     })();
     return () => {
       cancelled = true;
@@ -124,6 +139,7 @@ export default function CommunityPage() {
               key={selectedNodeId}
               nodeId={selectedNodeId}
               onMembershipChange={handleMembershipChange}
+              openMeetupFor={selectedNodeId === deepLink.node ? deepLink.member : null}
             />
           ) : (
             <EmptyState onCreate={() => setShowCreate(true)} />
