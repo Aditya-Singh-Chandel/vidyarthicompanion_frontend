@@ -4,12 +4,39 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import DailyTimeline from './DailyTimeline';
 import { getScheduleEvents } from '@/features/communityEngine/communityApi';
+import { getProfile } from '@/features/profileEngine/profileApi';
 
 /** Local YYYY-MM-DD key for a Date (avoids UTC off-by-one). */
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
     date.getDate()
   ).padStart(2, '0')}`;
+}
+
+const WEEKDAY_INDEX = {
+  Sunday: 0,
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+};
+
+/** "HH:MM" (24h) -> "9:00 AM". Falls back gracefully on bad input. */
+function formatTime(hhmm) {
+  if (!hhmm || !/^\d{1,2}:\d{2}$/.test(hhmm)) return hhmm || 'Time TBD';
+  const [h, m] = hhmm.split(':').map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+/** Minutes since midnight for ordering a timeline (unknown times sort last). */
+function minutesOf(hhmm) {
+  if (!hhmm || !/^\d{1,2}:\d{2}$/.test(hhmm)) return 24 * 60;
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
 }
 
 /** Map a backend event into the DailyTimeline shape. */
@@ -22,6 +49,7 @@ function toTimelineItem(ev) {
     id: ev.id,
     title: ev.eventName,
     time,
+    sortKey: Number.isNaN(d.getTime()) ? 24 * 60 : d.getHours() * 60 + d.getMinutes(),
     location: ev.location || 'TBD',
     type: 'academic',
     isFlagged: ev.status === 'pending',
@@ -34,11 +62,12 @@ export default function MasterCalendar() {
   const [selectedDate, setSelectedDate] = useState(() => dateKey(new Date()));
   const [loading, setLoading] = useState(true);
   const [eventsByDate, setEventsByDate] = useState({});
+  const [schedule, setSchedule] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const events = await getScheduleEvents('verified');
+      const [events, profile] = await Promise.all([getScheduleEvents('verified'), getProfile()]);
       if (cancelled) return;
       const grouped = {};
       for (const ev of events) {
@@ -48,12 +77,53 @@ export default function MasterCalendar() {
         (grouped[key] = grouped[key] || []).push(toTimelineItem(ev));
       }
       setEventsByDate(grouped);
+      setSchedule(profile?.schedule || []);
       setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
   }, []);
+
+  // Expand the weekly baseline class schedule into concrete dates for the
+  // currently displayed month. This is what makes the Profile timetable show
+  // up on the Master Calendar.
+  const recurringByDate = useMemo(() => {
+    if (!schedule.length) return {};
+    const byWeekday = {};
+    for (const slot of schedule) {
+      const wd = WEEKDAY_INDEX[slot.day];
+      if (wd === undefined) continue;
+      (byWeekday[wd] = byWeekday[wd] || []).push(slot);
+    }
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const out = {};
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(year, month, day);
+      const slots = byWeekday[d.getDay()];
+      if (!slots || !slots.length) continue;
+      const key = dateKey(d);
+      out[key] = slots.map((s, idx) => ({
+        id: `class-${key}-${idx}`,
+        title: s.subject,
+        time: formatTime(s.timeStart),
+        sortKey: minutesOf(s.timeStart),
+        location: s.room || 'TBD',
+        type: 'academic',
+        isBaseline: true,
+      }));
+    }
+    return out;
+  }, [schedule, currentDate]);
+
+  // Merge consensus events with the recurring class schedule for any given day.
+  const combinedFor = (key) => {
+    const merged = [...(recurringByDate[key] || []), ...(eventsByDate[key] || [])];
+    return merged.sort((a, b) => (a.sortKey ?? 0) - (b.sortKey ?? 0));
+  };
 
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
@@ -75,7 +145,7 @@ export default function MasterCalendar() {
     setSelectedDate(cellKey(day));
   };
 
-  const selectedEvents = eventsByDate[selectedDate] || [];
+  const selectedEvents = combinedFor(selectedDate);
   const todayKey = dateKey(today);
 
   return (
@@ -114,7 +184,9 @@ export default function MasterCalendar() {
         <div className="grid grid-cols-7 gap-1">
           {days.map((day, index) => {
             const formattedDate = day ? cellKey(day) : null;
-            const hasEvents = formattedDate && eventsByDate[formattedDate];
+            const hasEvents =
+              formattedDate &&
+              ((eventsByDate[formattedDate]?.length || 0) + (recurringByDate[formattedDate]?.length || 0)) > 0;
             const isSelected = formattedDate === selectedDate;
             const isToday = formattedDate === todayKey;
 
@@ -123,23 +195,25 @@ export default function MasterCalendar() {
                 {day ? (
                   <button
                     onClick={() => handleDateClick(day)}
-                    className={`w-full h-full flex flex-col items-center justify-center rounded-lg text-sm font-medium transition-all relative ${
+                    className={`relative flex h-full w-full flex-col items-center justify-center rounded-lg text-sm transition-all ${
                       isSelected
-                        ? 'bg-indigo-600 text-white shadow-md'
+                        ? 'bg-indigo-600 font-bold text-white shadow-sm'
                         : isToday
-                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                        : 'text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 bg-white border border-gray-100 shadow-sm'
+                        ? 'bg-indigo-50 font-semibold text-indigo-700'
+                        : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
                     {day}
                     {hasEvents && (
-                      <div className="absolute bottom-1.5 flex gap-0.5">
-                        <span className={`h-1 w-1 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-400'}`}></span>
-                      </div>
+                      <span
+                        className={`absolute bottom-1 h-1 w-1 rounded-full ${
+                          isSelected ? 'bg-white' : 'bg-indigo-500'
+                        }`}
+                      />
                     )}
                   </button>
                 ) : (
-                  <div className="w-full h-full"></div>
+                  <div className="h-full w-full" />
                 )}
               </div>
             );
@@ -147,33 +221,29 @@ export default function MasterCalendar() {
         </div>
       </div>
 
-      {/* Right Pane: The Daily Timeline */}
-      <div className="flex-1 p-6 bg-white overflow-y-auto">
-        <div className="mb-6 border-b border-gray-100 pb-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Schedule for</h3>
-          <p className="text-2xl font-black tracking-tight text-gray-900 mt-1">
+      {/* Right Pane: The Daily Detail */}
+      <div className="flex-1 p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-gray-500">
             {new Date(`${selectedDate}T00:00:00`).toLocaleDateString(undefined, {
               weekday: 'long',
               month: 'long',
               day: 'numeric',
             })}
-          </p>
+          </h3>
+          {selectedEvents.length > 0 && (
+            <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600">
+              {selectedEvents.length} {selectedEvents.length === 1 ? 'item' : 'items'}
+            </span>
+          )}
         </div>
 
         {loading ? (
-          <div className="flex items-center gap-2 py-10 text-sm text-gray-400">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading your schedule…
+          <div className="flex items-center justify-center py-16 text-sm text-gray-400">
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading your schedule…
           </div>
-        ) : selectedEvents.length > 0 ? (
-          <DailyTimeline schedule={selectedEvents} />
         ) : (
-          <div className="flex flex-col items-center justify-center h-64 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-              <CalendarIcon className="h-6 w-6 text-gray-300" />
-            </div>
-            <p className="text-sm font-medium text-gray-900">No scheduled events</p>
-            <p className="text-xs text-gray-500 mt-1">Upload a timetable via the Override Engine.</p>
-          </div>
+          <DailyTimeline schedule={selectedEvents} />
         )}
       </div>
     </div>

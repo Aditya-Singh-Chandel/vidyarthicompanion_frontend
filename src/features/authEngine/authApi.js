@@ -5,9 +5,9 @@ import apiClient, { setToken, clearToken } from "@/lib/apiClient";
  * @returns {Promise<{user: object}>}
  * @throws {Error} with a user-friendly message on failure.
  */
-export async function register({ name, email, password, role }) {
+export async function register({ name, username, email, password, role }) {
   try {
-    const res = await apiClient.post("/auth/register", { name, email, password, role });
+    const res = await apiClient.post("/auth/register", { name, username, email, password, role });
     const { token, user } = res.data.data;
     setToken(token);
     return { user };

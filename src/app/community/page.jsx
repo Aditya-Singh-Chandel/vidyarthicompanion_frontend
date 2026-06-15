@@ -5,7 +5,8 @@ import { Users2, ArrowRight, Loader2 } from 'lucide-react';
 import CommunitySidebar from '@/features/communityEngine/CommunitySidebar';
 import CommunityPanel from '@/features/communityEngine/CommunityPanel';
 import CreateCommunityModal from '@/features/communityEngine/CreateCommunityModal';
-import { getMyNodes, getAllNodes, joinNode, joinByCode } from '@/features/communityEngine/communityApi';
+import SyncConflictModal from '@/features/communityEngine/SyncConflictModal';
+import { getMyNodes, joinByCode } from '@/features/communityEngine/communityApi';
 
 function EmptyState({ onCreate }) {
   return (
@@ -30,15 +31,13 @@ function EmptyState({ onCreate }) {
 export default function CommunityPage() {
   const [loading, setLoading] = useState(true);
   const [myNodes, setMyNodes] = useState([]);
-  const [allNodes, setAllNodes] = useState([]);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
-  const [busyId, setBusyId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [conflict, setConflict] = useState(null);
 
   const load = useCallback(async () => {
-    const [mine, all] = await Promise.all([getMyNodes(), getAllNodes()]);
+    const mine = await getMyNodes();
     setMyNodes(mine);
-    setAllNodes(all);
     setLoading(false);
     return mine;
   }, []);
@@ -46,10 +45,9 @@ export default function CommunityPage() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [mine, all] = await Promise.all([getMyNodes(), getAllNodes()]);
+      const mine = await getMyNodes();
       if (cancelled) return;
       setMyNodes(mine);
-      setAllNodes(all);
       setLoading(false);
       setSelectedNodeId((cur) => cur || mine[0]?.nodeId || null);
     })();
@@ -58,22 +56,14 @@ export default function CommunityPage() {
     };
   }, []);
 
-  const discoverNodes = allNodes.filter((n) => !n.isMember);
-
-  const handleJoin = async (node) => {
-    setBusyId(node.nodeId);
-    const res = await joinNode(node.nodeId);
-    await load();
-    setBusyId(null);
-    if (res.status === 'joined') setSelectedNodeId(node.nodeId);
-  };
-
   const handleJoinByCode = async (code) => {
     const res = await joinByCode(code);
     if (res.status === 'joined') {
       const mine = await load();
       const joined = res.node?.nodeId || mine[mine.length - 1]?.nodeId;
       if (joined) setSelectedNodeId(joined);
+      // Class / Mess sync conflict resolution.
+      if (res.conflict) setConflict(res.conflict);
     }
     return res;
   };
@@ -98,20 +88,17 @@ export default function CommunityPage() {
         <div>
           <h1 className="text-2xl font-black tracking-tight text-gray-900">Communities</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Each community keeps its own feed. Verified updates flow to your dashboard and master calendar.
+            Every community is private and invite-only. Verified updates flow to your dashboard and master calendar.
           </p>
         </div>
 
         <div className="flex flex-col gap-6 lg:flex-row">
           <CommunitySidebar
             myNodes={myNodes}
-            discoverNodes={discoverNodes}
             selectedNodeId={selectedNodeId}
             onSelect={setSelectedNodeId}
-            onJoin={handleJoin}
             onJoinByCode={handleJoinByCode}
             onCreateClick={() => setShowCreate(true)}
-            busyId={busyId}
           />
 
           {loading ? (
@@ -132,6 +119,10 @@ export default function CommunityPage() {
 
       {showCreate && (
         <CreateCommunityModal onClose={() => setShowCreate(false)} onCreated={handleCreated} />
+      )}
+
+      {conflict && (
+        <SyncConflictModal conflict={conflict} onResolved={() => setConflict(null)} />
       )}
     </div>
   );

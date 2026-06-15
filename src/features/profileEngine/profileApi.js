@@ -68,3 +68,25 @@ export async function saveMenu(nodeId, menu) {
     return null;
   }
 }
+
+/** Read the user's personal (non-community) mess menu. */
+export async function getPersonalMenu() {
+  try {
+    const response = await apiClient.get("/profile/personal-menu");
+    return response.data?.data?.menu ?? null;
+  } catch (error) {
+    console.error("getPersonalMenu failed:", error);
+    return null;
+  }
+}
+
+/** Persist the user's personal mess menu (never shared with a community). */
+export async function savePersonalMenu(menu) {
+  try {
+    const response = await apiClient.post("/profile/personal-menu", { menu });
+    return response.data?.data?.menu ?? null;
+  } catch (error) {
+    console.error("savePersonalMenu failed:", error);
+    return null;
+  }
+}

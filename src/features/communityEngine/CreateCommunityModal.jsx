@@ -1,31 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Loader2, Globe, Lock, ShieldQuestion } from 'lucide-react';
+import { X, Loader2, ShieldQuestion } from 'lucide-react';
 import { NATURE_META, NATURE_ORDER, NODE_TYPES } from './communityMeta';
 import { createNode } from './communityApi';
-
-const VISIBILITY = [
-  {
-    value: 'public',
-    label: 'Public',
-    Icon: Globe,
-    hint: 'Discoverable by everyone on campus.',
-  },
-  {
-    value: 'private',
-    label: 'Private',
-    Icon: ShieldQuestion,
-    hint: 'Hidden. Join only via invite code.',
-  },
-];
 
 export default function CreateCommunityModal({ onClose, onCreated }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [nature, setNature] = useState('accountability');
-  const [visibility, setVisibility] = useState('public');
-  const [joinPolicy, setJoinPolicy] = useState('open');
   const [nodeType, setNodeType] = useState('Academic');
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,12 +16,11 @@ export default function CreateCommunityModal({ onClose, onCreated }) {
     e.preventDefault();
     if (!name.trim()) return;
     setSubmitting(true);
+    // All communities are private (invite-only) — visibility is no longer chosen.
     const node = await createNode({
       name: name.trim(),
       description: description.trim(),
       nature,
-      visibility,
-      joinPolicy: visibility === 'public' ? joinPolicy : 'locked',
       nodeType,
     });
     setSubmitting(false);
@@ -121,78 +103,6 @@ export default function CreateCommunityModal({ onClose, onCreated }) {
             </div>
           </div>
 
-          {/* Visibility */}
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Visibility
-            </label>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {VISIBILITY.map((v) => {
-                const Icon = v.Icon;
-                const active = visibility === v.value;
-                return (
-                  <button
-                    key={v.value}
-                    type="button"
-                    onClick={() => setVisibility(v.value)}
-                    className={`flex items-start gap-2 rounded-xl border p-3 text-left transition-all ${
-                      active
-                        ? 'border-transparent bg-indigo-50 ring-2 ring-indigo-100'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <Icon className={`mt-0.5 h-4 w-4 ${active ? 'text-indigo-600' : 'text-gray-400'}`} />
-                    <span>
-                      <span className={`block text-sm font-semibold ${active ? 'text-indigo-700' : 'text-gray-700'}`}>
-                        {v.label}
-                      </span>
-                      <span className="text-[11px] leading-tight text-gray-500">{v.hint}</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Join policy (public only) */}
-          {visibility === 'public' && (
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Join policy
-              </label>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setJoinPolicy('open')}
-                  className={`flex items-center gap-2 rounded-xl border p-3 text-left transition-all ${
-                    joinPolicy === 'open'
-                      ? 'border-transparent bg-emerald-50 ring-2 ring-emerald-100'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Globe className={`h-4 w-4 ${joinPolicy === 'open' ? 'text-emerald-600' : 'text-gray-400'}`} />
-                  <span className={`text-sm font-semibold ${joinPolicy === 'open' ? 'text-emerald-700' : 'text-gray-700'}`}>
-                    Unlocked
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setJoinPolicy('locked')}
-                  className={`flex items-center gap-2 rounded-xl border p-3 text-left transition-all ${
-                    joinPolicy === 'locked'
-                      ? 'border-transparent bg-amber-50 ring-2 ring-amber-100'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Lock className={`h-4 w-4 ${joinPolicy === 'locked' ? 'text-amber-600' : 'text-gray-400'}`} />
-                  <span className={`text-sm font-semibold ${joinPolicy === 'locked' ? 'text-amber-700' : 'text-gray-700'}`}>
-                    Locked (approval)
-                  </span>
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Type tag */}
           <div>
             <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -209,6 +119,18 @@ export default function CreateCommunityModal({ onClose, onCreated }) {
                 </option>
               ))}
             </select>
+            <p className="mt-1.5 text-[11px] leading-tight text-gray-400">
+              Class &amp; Mess communities sync their baseline timetable / menu with members on join.
+            </p>
+          </div>
+
+          {/* Privacy notice — every community is invite-only now. */}
+          <div className="flex items-start gap-2 rounded-xl border border-indigo-100 bg-indigo-50/60 p-3">
+            <ShieldQuestion className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
+            <p className="text-[11px] leading-snug text-indigo-700">
+              <span className="font-semibold text-indigo-800">Private &amp; invite-only.</span> Every
+              community is hidden from discovery. Share its invite code so others can join.
+            </p>
           </div>
         </form>
 

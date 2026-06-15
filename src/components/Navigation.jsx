@@ -29,8 +29,8 @@ export default function Navigation() {
     router.replace('/login');
   };
 
-  const displayName = user?.name || 'Student';
-  const initial = displayName.charAt(0).toUpperCase();
+  const displayName = user?.username ? `@${user.username}` : user?.name || 'Student';
+  const initial = (user?.username || user?.name || 'S').charAt(0).toUpperCase();
   const roleLabel = ROLE_LABELS[user?.role] || 'Student';
 
   return (
