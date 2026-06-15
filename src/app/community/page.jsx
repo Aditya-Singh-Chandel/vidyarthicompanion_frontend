@@ -33,7 +33,7 @@ export default function CommunityPage() {
   const [myNodes, setMyNodes] = useState([]);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [conflict, setConflict] = useState(null);
+  const [adopted, setAdopted] = useState(null);
 
   const load = useCallback(async () => {
     const mine = await getMyNodes();
@@ -62,8 +62,8 @@ export default function CommunityPage() {
       const mine = await load();
       const joined = res.node?.nodeId || mine[mine.length - 1]?.nodeId;
       if (joined) setSelectedNodeId(joined);
-      // Class / Mess sync conflict resolution.
-      if (res.conflict) setConflict(res.conflict);
+      // Class / Mess: the community baseline was adopted into the user's profile.
+      if (res.adopted) setAdopted(res.adopted);
     }
     return res;
   };
@@ -121,8 +121,8 @@ export default function CommunityPage() {
         <CreateCommunityModal onClose={() => setShowCreate(false)} onCreated={handleCreated} />
       )}
 
-      {conflict && (
-        <SyncConflictModal conflict={conflict} onResolved={() => setConflict(null)} />
+      {adopted && (
+        <SyncConflictModal adopted={adopted} onResolved={() => setAdopted(null)} />
       )}
     </div>
   );
