@@ -60,7 +60,7 @@ export default function LoginPage() {
             <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur-md">
               <Compass className="h-5 w-5" />
             </span>
-            <span className="font-display text-xl font-semibold tracking-tight">CampusFlow</span>
+            <span className="font-display text-xl font-semibold tracking-tight">VidyarthiCompanion</span>
           </div>
 
           <div className="max-w-md">
@@ -105,7 +105,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md cf-page-enter">
           <div className="mb-8 text-center lg:hidden">
             <h1 className="font-display text-3xl font-semibold tracking-tight">
-              <span className="cf-gradient-text">CampusFlow</span>
+              <span className="cf-gradient-text">VidyarthiCompanion</span>
             </h1>
             <p className="mt-2 text-sm text-gray-500">AI Operating System for Student Life</p>
           </div>
@@ -132,7 +132,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-xl border border-gray-200 bg-white/70 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm transition focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/15"
-                  placeholder="you@campusflow.in"
+                  placeholder="you@vidyarthicompanion.in"
                 />
               </div>
 

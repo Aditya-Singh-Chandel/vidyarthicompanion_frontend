@@ -7,7 +7,7 @@ import axios from "axios";
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1";
 
-const TOKEN_KEY = "campusflow_token";
+const TOKEN_KEY = "vidyarthicompanion_token";
 
 export function getToken() {
   if (typeof window === "undefined") return null;

@@ -24,7 +24,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata = {
-  title: "CampusFlow | AI OS for Student Life",
+  title: "VidyarthiCompanion | AI OS for Student Life",
   description: "AI Operating System for Student Life",
 };
 

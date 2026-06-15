@@ -97,7 +97,7 @@ export default function SettingsPanel({ profile }) {
             setEmail(e.target.value);
             setEmailError('');
           }}
-          placeholder="you@campusflow.in"
+          placeholder="you@vidyarthicompanion.in"
           className={inputClass}
         />
         {emailError && <p className="text-xs font-medium text-rose-600">{emailError}</p>}

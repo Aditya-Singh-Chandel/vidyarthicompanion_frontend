@@ -17,7 +17,7 @@ function FullScreenLoader() {
           <div className="absolute inset-2 rounded-full bg-indigo-600/10 cf-float" />
         </div>
         <p className="font-display text-base font-medium tracking-tight text-gray-600">
-          Loading CampusFlow&hellip;
+          Loading VidyarthiCompanion&hellip;
         </p>
       </div>
     </div>

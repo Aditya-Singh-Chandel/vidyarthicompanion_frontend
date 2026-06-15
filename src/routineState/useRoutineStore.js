@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 /**
- * Global routine + budget store for CampusFlow.
+ * Global routine + budget store for VidyarthiCompanion.
  *
  * State:
  *  - currentBudget:   remaining budget (defaults to 50.00)

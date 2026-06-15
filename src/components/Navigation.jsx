@@ -42,7 +42,7 @@ export default function Navigation() {
         </span>
         <div className="leading-none">
           <h1 className="font-display text-xl font-semibold tracking-tight text-gray-900">
-            CampusFlow
+            VidyarthiCompanion
           </h1>
           <span className="text-[0.6rem] font-semibold uppercase tracking-[0.28em] text-gray-400">
             AI OS

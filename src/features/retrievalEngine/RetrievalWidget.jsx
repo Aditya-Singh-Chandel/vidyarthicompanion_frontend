@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Search, Sparkles, ArrowRight } from 'lucide-react';
-import { askCampusFlow } from './retrievalApi';
+import { askVidyarthiCompanion } from './retrievalApi';
 
 export default function RetrievalWidget() {
   const [query, setQuery] = useState('');
@@ -17,7 +17,7 @@ export default function RetrievalWidget() {
     setAnswer(null);
 
     // LIVE AI CONNECTION
-    const result = await askCampusFlow(query);
+    const result = await askVidyarthiCompanion(query);
 
     setAnswer(result);
     setIsAsking(false);
@@ -31,7 +31,7 @@ export default function RetrievalWidget() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ask CampusFlow about your schedule, budget, or campus events..."
+          placeholder="Ask VidyarthiCompanion about your schedule, budget, or campus events..."
           className="w-full rounded-full border-0 bg-white py-4 pl-14 pr-36 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all"
         />
         <button

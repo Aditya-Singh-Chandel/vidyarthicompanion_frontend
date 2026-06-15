@@ -34,7 +34,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-black tracking-tighter text-indigo-600">CampusFlow.</h1>
+          <h1 className="text-3xl font-black tracking-tighter text-indigo-600">VidyarthiCompanion.</h1>
           <p className="mt-2 text-sm text-gray-500">AI Operating System for Student Life</p>
         </div>
 
@@ -94,7 +94,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                placeholder="you@campusflow.in"
+                placeholder="you@vidyarthicompanion.in"
               />
             </div>
 
