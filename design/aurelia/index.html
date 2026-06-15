@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aurelia — Heritage &amp; Landscape Studio</title>
+  <meta name="description" content="Aurelia crafts immersive heritage and landscape journeys where architecture meets the horizon." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" id="top">
+    <div class="scene" aria-hidden="true">
+      <div class="scene__sky"></div>
+      <div class="scene__sun" data-tilt="18"></div>
+
+      <!-- far ridge -->
+      <div class="scene__layer" data-parallax="0.12" style="bottom:8%">
+        <svg viewBox="0 0 1440 420" preserveAspectRatio="none">
+          <path d="M0 300 L120 250 L260 290 L400 210 L560 280 L720 190 L880 270 L1040 220 L1200 285 L1340 240 L1440 280 L1440 420 L0 420 Z" fill="var(--forest-400)" opacity="0.55"/>
+        </svg>
+      </div>
+
+      <!-- mid mountains -->
+      <div class="scene__layer" data-parallax="0.22" style="bottom:2%">
+        <svg viewBox="0 0 1440 480" preserveAspectRatio="none">
+          <path d="M0 360 L180 230 L300 320 L470 180 L640 330 L820 220 L980 340 L1160 250 L1320 360 L1440 300 L1440 480 L0 480 Z" fill="var(--forest-500)"/>
+        </svg>
+      </div>
+
+      <!-- cliffside citadel (heritage focal point, amber) -->
+      <div class="scene__layer" data-parallax="0.34" style="right:6%; left:auto; bottom:0; width:46%">
+        <svg viewBox="0 0 560 520" preserveAspectRatio="xMidYMax meet">
+          <!-- cliff -->
+          <path d="M120 520 C140 380 180 300 300 250 C420 220 520 250 560 240 L560 520 Z" fill="var(--amber-600)"/>
+          <path d="M150 520 C170 400 220 330 330 290 C440 260 540 290 560 285 L560 520 Z" fill="var(--amber-500)"/>
+          <!-- towers -->
+          <g fill="var(--amber-600)">
+            <rect x="330" y="150" width="34" height="150"/>
+            <rect x="380" y="120" width="40" height="180"/>
+            <rect x="435" y="170" width="30" height="130"/>
+            <rect x="300" y="190" width="26" height="110"/>
+          </g>
+          <g fill="var(--amber-300)" opacity="0.9">
+            <polygon points="347,118 330,150 364,150"/>
+            <polygon points="400,80 378,120 422,120"/>
+            <polygon points="450,140 433,170 467,170"/>
+            <polygon points="313,160 298,190 328,190"/>
+          </g>
+          <!-- windows glow -->
+          <g fill="var(--cream-200)" opacity="0.85">
+            <rect x="343" y="180" width="7" height="12"/><rect x="343" y="210" width="7" height="12"/>
+            <rect x="392" y="160" width="8" height="13"/><rect x="392" y="200" width="8" height="13"/>
+            <rect x="445" y="200" width="6" height="11"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- foreground hills -->
+      <div class="scene__layer" data-parallax="0.46" style="bottom:-2%">
+        <svg viewBox="0 0 1440 360" preserveAspectRatio="none">
+          <path d="M0 220 C220 120 420 230 640 200 C860 170 1040 260 1240 200 C1340 170 1440 210 1440 210 L1440 360 L0 360 Z" fill="var(--forest-700)"/>
+        </svg>
+      </div>
+      <div class="scene__layer" data-parallax="0.6" style="bottom:-4%">
+        <svg viewBox="0 0 1440 280" preserveAspectRatio="none">
+          <path d="M0 180 C260 90 520 200 760 160 C1000 120 1200 210 1440 150 L1440 280 L0 280 Z" fill="var(--forest-900)"/>
+        </svg>
+      </div>
+      <div class="scene__haze"></div>
+      <div class="scene__grain"></div>
+    </div>
+
+    <!-- floating card that visually "morphs" toward the Atlas header -->
+    <div class="hero__float-card glass float" data-tilt="26" id="heroMorph">
+      <span class="chip chip--accent"><span class="chip__dot"></span>Now exploring</span>
+      <h3 style="font-size:1.3rem;margin-bottom:.3rem">Cliffside Citadel</h3>
+      <p class="muted" style="font-size:.86rem">A 9th-century fortress crowning the amber valley.</p>
+    </div>
+
+    <div class="container hero__content">
+      <span class="eyebrow" data-reveal>Heritage &amp; Landscape Studio</span>
+      <h1 class="display" data-reveal data-reveal-delay="1">
+        Where architecture<br>meets the <em>horizon</em>.
+      </h1>
+      <p class="lead" data-reveal data-reveal-delay="2">
+        Aurelia designs immersive journeys through the world's most storied
+        landscapes — fortresses, valleys and waterfalls, reimagined as living experiences.
+      </p>
+      <div class="hero__cta" data-reveal data-reveal-delay="3">
+        <a class="btn btn--primary" data-open="#bookingModal" href="#book">Plan a visit</a>
+        <a class="btn btn--ghost" href="atlas.html" data-transition>Explore the Atlas</a>
+      </div>
+      <div class="hero__meta" data-reveal data-reveal-delay="4">
+        <div class="hero__stat"><div class="n" data-count="48" data-suffix="+">0</div><div class="l">Heritage sites</div></div>
+        <div class="hero__stat"><div class="n" data-count="12" data-suffix="k">0</div><div class="l">Travellers guided</div></div>
+        <div class="hero__stat"><div class="n" data-count="9" data-suffix="yr">0</div><div class="l">Crafting journeys</div></div>
+      </div>
+    </div>
+
+    <div class="scroll-cue" aria-hidden="true">
+      <span>Scroll</span>
+      <span class="scroll-cue__line"></span>
+    </div>
+  </section>
+
+  <!-- ===================== MARQUEE ===================== -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track">
+      <span class="marquee__item">Cliffside Citadel ✦</span>
+      <span class="marquee__item">Amber Valley ✦</span>
+      <span class="marquee__item">The Lower Falls ✦</span>
+      <span class="marquee__item">Old Aqueduct Trail ✦</span>
+      <span class="marquee__item">Lantern Night Market ✦</span>
+      <span class="marquee__item">Cliffside Citadel ✦</span>
+      <span class="marquee__item">Amber Valley ✦</span>
+      <span class="marquee__item">The Lower Falls ✦</span>
+      <span class="marquee__item">Old Aqueduct Trail ✦</span>
+      <span class="marquee__item">Lantern Night Market ✦</span>
+    </div>
+  </div>
+
+  <!-- ===================== MISSION (split) ===================== -->
+  <section class="section" id="mission">
+    <div class="container split">
+      <div class="stack">
+        <span class="eyebrow" data-reveal>Our Mission</span>
+        <h2 data-reveal data-reveal-delay="1">We turn timeless places into journeys you can feel.</h2>
+        <p class="lead" data-reveal data-reveal-delay="2">
+          Our purpose is to deepen the bond between people and place. By pairing
+          meticulous historical research with cinematic design, we guide travellers
+          beyond the viewpoint — into the story of the landscape itself.
+        </p>
+        <p class="muted" data-reveal data-reveal-delay="3">
+          Every route is built on the ground, with the communities who keep these
+          places alive — leading our travellers, never just sending them.
+        </p>
+        <div data-reveal data-reveal-delay="4">
+          <a class="btn btn--solid" href="atlas.html" data-transition>Our story</a>
+        </div>
+      </div>
+
+      <div data-reveal="right">
+        <div class="media-frame" data-tilt="8">
+          <svg viewBox="0 0 600 520" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Sunrise over a heritage valley">
+            <defs>
+              <linearGradient id="mSky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#f0c089"/><stop offset="0.55" stop-color="#e8a763"/><stop offset="1" stop-color="#c2702f"/>
+              </linearGradient>
+            </defs>
+            <rect width="600" height="520" fill="url(#mSky)"/>
+            <circle cx="420" cy="160" r="70" fill="#faf2e1" opacity="0.9"/>
+            <path d="M0 360 L120 250 L220 320 L340 230 L460 330 L560 260 L600 300 L600 520 L0 520 Z" fill="#8a4327" opacity="0.55"/>
+            <path d="M0 420 L140 320 L280 400 L420 310 L560 400 L600 370 L600 520 L0 520 Z" fill="#5a2f1c" opacity="0.8"/>
+            <path d="M0 470 C160 410 320 470 460 440 C540 425 600 450 600 450 L600 520 L0 520 Z" fill="#2b1610"/>
+          </svg>
+          <span class="chip chip--accent media-frame__tag">Amber Valley · golden hour</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURES ===================== -->
+  <section class="section" style="background:var(--bg-soft)" id="features">
+    <div class="container">
+      <div class="center stack" style="max-width:62ch;margin-inline:auto">
+        <span class="eyebrow" data-reveal style="justify-content:center">What we craft</span>
+        <h2 data-reveal data-reveal-delay="1">One ecosystem, three ways to wander</h2>
+      </div>
+
+      <div class="feature-grid" style="margin-top:var(--s-7)">
+        <article class="card" data-reveal>
+          <div class="card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-14 6 9 3-6 3 11z"/></svg>
+          </div>
+          <h3>Curated routes</h3>
+          <p>Hand-built itineraries that move with the light — from sunrise citadels to lantern-lit night markets.</p>
+        </article>
+        <article class="card" data-reveal data-reveal-delay="1">
+          <div class="card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <h3>Living heritage</h3>
+          <p>Stories told by the people who keep these places — historians, builders and local guides.</p>
+        </article>
+        <article class="card" data-reveal data-reveal-delay="2">
+          <div class="card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+          </div>
+          <h3>Your own pace</h3>
+          <p>An interactive planner that adapts the journey to your time, energy and curiosity.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== JOURNEY / FLOW ===================== -->
+  <section class="section" id="journey">
+    <div class="container split split--reverse">
+      <div class="stack">
+        <span class="eyebrow" data-reveal>The journey</span>
+        <h2 data-reveal data-reveal-delay="1">Seamless from first scroll to final summit.</h2>
+        <p class="lead" data-reveal data-reveal-delay="2">Browse the Atlas, shape a plan, and watch every screen flow into the next — no waiting, no jarring jumps. The same components simply rearrange around you.</p>
+        <ul class="stack" style="margin-top:var(--s-3)">
+          <li class="chip" data-reveal data-reveal-delay="2">01 · Discover in the Atlas</li>
+          <li class="chip" data-reveal data-reveal-delay="3">02 · Shape it in the Planner</li>
+          <li class="chip" data-reveal data-reveal-delay="4">03 · Set out on the journey</li>
+        </ul>
+        <div data-reveal data-reveal-delay="5">
+          <a class="btn btn--primary" href="planner.html" data-transition>Open the Planner</a>
+        </div>
+      </div>
+      <div data-reveal="left">
+        <div class="media-frame" data-tilt="8" style="aspect-ratio:4/3.4">
+          <svg viewBox="0 0 600 520" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Misty waterfall between cliffs">
+            <defs>
+              <linearGradient id="wSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3a63"/><stop offset="1" stop-color="#0b1626"/></linearGradient>
+              <linearGradient id="wFall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3ff"/><stop offset="1" stop-color="#6fb6e8"/></linearGradient>
+            </defs>
+            <rect width="600" height="520" fill="url(#wSky)"/>
+            <path d="M0 0 L210 0 L210 520 L0 520 Z" fill="#102036"/>
+            <path d="M390 0 L600 0 L600 520 L390 520 Z" fill="#102036"/>
+            <rect x="250" y="40" width="100" height="430" fill="url(#wFall)" opacity="0.92" rx="8"/>
+            <rect x="262" y="60" width="14" height="400" fill="#eaf6ff" opacity="0.6"/>
+            <rect x="318" y="80" width="12" height="380" fill="#eaf6ff" opacity="0.5"/>
+            <ellipse cx="300" cy="478" rx="150" ry="26" fill="#bfe3ff" opacity="0.55"/>
+            <ellipse cx="300" cy="120" rx="70" ry="20" fill="#dff1ff" opacity="0.7"/>
+          </svg>
+          <span class="chip media-frame__tag" style="background:rgba(11,22,38,.7);color:#dff1ff;border:none">The Lower Falls · dusk</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CTA BAND ===================== -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-band" data-reveal="scale">
+        <div class="cta-band__scene" aria-hidden="true">
+          <svg viewBox="0 0 1440 200" preserveAspectRatio="none" style="width:100%"><path d="M0 140 L240 60 L480 130 L720 50 L960 130 L1200 60 L1440 120 L1440 200 L0 200 Z" fill="var(--amber-500)"/></svg>
+        </div>
+        <span class="eyebrow" style="justify-content:center;color:var(--amber-300)">Begin</span>
+        <h2>Your horizon is waiting.</h2>
+        <p class="lead">Reserve a curated expedition and let the landscape do the talking.</p>
+        <div style="display:flex;gap:var(--s-3);justify-content:center;flex-wrap:wrap;margin-top:var(--s-5)">
+          <a class="btn btn--primary" data-open="#bookingModal" href="#book">Plan a visit</a>
+          <a class="btn btn--ghost" data-open="#contactPanel" href="#contact" style="color:var(--cream-100);border-color:rgba(243,230,204,.4)">Talk to us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div data-footer></div>
+
+  <script src="js/shell.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

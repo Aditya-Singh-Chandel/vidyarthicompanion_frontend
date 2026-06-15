@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expedition Planner — Aurelia</title>
+  <meta name="description" content="Shape your heritage journey — an interactive planner with live progress, itinerary builder and preferences." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+  <main class="container dash">
+    <!-- ===================== HEAD ===================== -->
+    <div class="dash__head">
+      <div class="stack">
+        <span class="eyebrow" data-reveal>Expedition Planner</span>
+        <h1 class="display" style="font-size:clamp(2.2rem,5vw,3.4rem)" data-reveal data-reveal-delay="1">Shape your <em>journey</em>.</h1>
+        <p class="muted" data-reveal data-reveal-delay="2">Adjust the dials and watch your expedition take shape in real time.</p>
+      </div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap" data-reveal data-reveal-delay="2">
+        <button class="btn btn--ghost btn--sm" data-open="#settingsPanel">Preferences</button>
+        <button class="btn btn--primary btn--sm" data-open="#bookingModal">Confirm expedition</button>
+      </div>
+    </div>
+
+    <!-- ===================== STAT ROW ===================== -->
+    <div class="stat-row">
+      <div class="stat card glass" data-reveal>
+        <div class="stat__label"><span class="chip__dot"></span>Days planned</div>
+        <div class="stat__value" data-iti-count>3</div>
+        <div class="stat__delta up">▲ live itinerary</div>
+      </div>
+      <div class="stat card glass" data-reveal data-reveal-delay="1">
+        <div class="stat__label">Distance</div>
+        <div class="stat__value"><span data-count="42" data-suffix="">0</span> km</div>
+        <div class="stat__delta up">▲ 8 km scenic</div>
+      </div>
+      <div class="stat card glass" data-reveal data-reveal-delay="2">
+        <div class="stat__label">Est. budget</div>
+        <div class="stat__value" id="budgetOut">$540</div>
+        <div class="stat__delta down">▼ flexible</div>
+      </div>
+      <div class="stat card glass" data-reveal data-reveal-delay="3">
+        <div class="stat__label">Travellers</div>
+        <div class="stat__value"><span data-count="2">0</span></div>
+        <div class="stat__delta up">▲ small group</div>
+      </div>
+    </div>
+
+    <!-- ===================== MAIN GRID ===================== -->
+    <div class="dash__grid">
+      <!-- LEFT: builder -->
+      <div class="stack" style="--space:var(--s-5)">
+        <!-- preferences form -->
+        <section class="card" data-reveal>
+          <h3 style="margin-bottom:var(--s-4)">Trip preferences</h3>
+          <form class="flow" data-demo-form="Preferences applied">
+            <div class="grid" style="grid-template-columns:1fr 1fr">
+              <div class="field"><label for="dest">Base destination</label>
+                <select class="select" id="dest">
+                  <option>Amber Valley</option><option>Cliffside Citadel</option>
+                  <option>The Lower Falls</option><option>Mirror Lake</option>
+                </select>
+              </div>
+              <div class="field"><label for="start">Start date</label><input class="input" id="start" type="date"></div>
+            </div>
+
+            <div class="field">
+              <label>Pace</label>
+              <div class="segment" data-segment-target="#paceOut" style="width:100%">
+                <button type="button" data-value="Gentle" style="flex:1">Gentle</button>
+                <button type="button" class="is-active" data-value="Balanced" style="flex:1">Balanced</button>
+                <button type="button" data-value="Intrepid" style="flex:1">Intrepid</button>
+              </div>
+              <span class="muted" style="font-size:.82rem">Selected: <strong id="paceOut">Balanced</strong></span>
+            </div>
+
+            <div class="field">
+              <label for="budget">Budget per traveller — <strong id="budgetVal">$540</strong></label>
+              <input class="range" id="budget" type="range" min="200" max="1500" step="20" value="540">
+            </div>
+
+            <div class="field">
+              <label for="dist">Daily distance — <strong id="distVal">12 km</strong></label>
+              <input class="range" id="dist" type="range" min="3" max="25" value="12" data-output="#distVal" data-unit=" km">
+            </div>
+
+            <div class="setting-row" style="border:none;padding-top:0">
+              <div class="label"><strong>Guided experience</strong><span>Local historian on every stop</span></div>
+              <label class="toggle"><input type="checkbox" checked><span class="toggle__track"></span></label>
+            </div>
+            <div class="setting-row" style="padding-top:0">
+              <div class="label"><strong>Night programme</strong><span>Lantern markets &amp; star walks</span></div>
+              <label class="toggle"><input type="checkbox"><span class="toggle__track"></span></label>
+            </div>
+
+            <button class="btn btn--primary btn--block" type="submit">Apply preferences</button>
+          </form>
+        </section>
+
+        <!-- itinerary builder -->
+        <section class="card" data-reveal data-reveal-delay="1" style="margin-top:var(--s-5)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s-4)">
+            <h3>Your itinerary</h3>
+            <button class="btn btn--ghost btn--sm" data-add-iti>+ Add stop</button>
+          </div>
+          <div class="itinerary" data-iti-list>
+            <div class="iti">
+              <div class="iti__day">D1</div>
+              <div class="iti__body"><strong>Cliffside Citadel</strong><p>Sunrise walk + guided history tour</p></div>
+              <button class="iti__drag" aria-label="remove" data-remove-iti><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            </div>
+            <div class="iti">
+              <div class="iti__day">D2</div>
+              <div class="iti__body"><strong>The Lower Falls</strong><p>Cascade viewpoint &amp; photography</p></div>
+              <button class="iti__drag" aria-label="remove" data-remove-iti><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            </div>
+            <div class="iti">
+              <div class="iti__day">D3</div>
+              <div class="iti__body"><strong>Amber Valley Mess</strong><p>Heritage tasting dinner</p></div>
+              <button class="iti__drag" aria-label="remove" data-remove-iti><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- RIGHT: live readouts -->
+      <div class="stack">
+        <!-- readiness rings -->
+        <section class="card" data-reveal data-reveal-delay="1">
+          <h3 style="margin-bottom:var(--s-5)">Expedition readiness</h3>
+          <svg width="0" height="0" aria-hidden="true"><defs>
+            <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--amber-500)"/><stop offset="1" stop-color="var(--amber-300)"/>
+            </linearGradient>
+          </defs></svg>
+          <div style="display:flex;gap:var(--s-5);flex-wrap:wrap;justify-content:space-around">
+            <div class="ring" data-ring="82">
+              <svg viewBox="0 0 120 120"><circle class="ring__track" cx="60" cy="60" r="52"/><circle class="ring__bar" cx="60" cy="60" r="52"/></svg>
+              <div class="ring__label"><div class="v" data-suffix="%">0</div><div class="t">Planned</div></div>
+            </div>
+            <div class="ring" data-ring="64">
+              <svg viewBox="0 0 120 120"><circle class="ring__track" cx="60" cy="60" r="52"/><circle class="ring__bar" cx="60" cy="60" r="52"/></svg>
+              <div class="ring__label"><div class="v" data-suffix="%">0</div><div class="t">Booked</div></div>
+            </div>
+            <div class="ring" data-ring="91">
+              <svg viewBox="0 0 120 120"><circle class="ring__track" cx="60" cy="60" r="52"/><circle class="ring__bar" cx="60" cy="60" r="52"/></svg>
+              <div class="ring__label"><div class="v" data-suffix="%">0</div><div class="t">Weather</div></div>
+            </div>
+          </div>
+          <hr class="divider" style="margin:var(--s-5) 0">
+          <div class="field">
+            <label>Overall completion</label>
+            <div class="progress" data-progress="76"><div class="progress__fill"></div></div>
+            <span class="muted" style="font-size:.82rem">76% — almost ready to set out</span>
+          </div>
+        </section>
+
+        <!-- best-light chart -->
+        <section class="card" data-reveal data-reveal-delay="2" style="margin-top:var(--s-5)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s-3)">
+            <h3>Best light this week</h3>
+            <span class="chip chip--accent">golden hours</span>
+          </div>
+          <div class="chart">
+            <div class="chart__bar" data-value="45" data-label="Mon"></div>
+            <div class="chart__bar" data-value="62" data-label="Tue"></div>
+            <div class="chart__bar is-peak" data-value="95" data-label="Wed"></div>
+            <div class="chart__bar" data-value="70" data-label="Thu"></div>
+            <div class="chart__bar" data-value="55" data-label="Fri"></div>
+            <div class="chart__bar is-peak" data-value="88" data-label="Sat"></div>
+            <div class="chart__bar" data-value="40" data-label="Sun"></div>
+          </div>
+          <p class="muted" style="font-size:.82rem;margin-top:var(--s-5)">Wednesday &amp; Saturday offer the clearest golden hours for photography.</p>
+        </section>
+
+        <!-- live feed -->
+        <section class="card" data-reveal data-reveal-delay="3" style="margin-top:var(--s-5)">
+          <h3 style="margin-bottom:var(--s-3)">Live updates</h3>
+          <div class="feed-item"><span class="feed-dot"></span><div><p><strong>Guide assigned</strong> — Mira will lead your citadel tour.</p><time>2 min ago</time></div></div>
+          <div class="feed-item"><span class="feed-dot"></span><div><p>Weather window confirmed for <strong>Wed sunrise</strong>.</p><time>1 hr ago</time></div></div>
+          <div class="feed-item"><span class="feed-dot"></span><div><p>3 travellers viewing the <strong>Waterfall Circuit</strong>.</p><time>today</time></div></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div data-footer></div>
+
+  <script src="js/shell.js"></script>
+  <script src="js/app.js"></script>
+  <!-- page-local: keep stat budget in sync with slider -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var b = document.getElementById("budget");
+      var statOut = document.getElementById("budgetOut");
+      var lblOut = document.getElementById("budgetVal");
+      function sync() {
+        var v = "$" + b.value;
+        if (statOut) statOut.textContent = v;
+        if (lblOut) lblOut.textContent = v;
+      }
+      if (b) { b.addEventListener("input", sync); sync(); }
+    });
+  </script>
+</body>
+</html>
