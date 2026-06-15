@@ -8,6 +8,7 @@ import {
   BookOpen,
   Users,
   HeartPulse,
+  HeartHandshake,
   Wallet,
   Sparkles,
   Loader2,
@@ -25,6 +26,7 @@ const TYPE_STYLES = {
   class: { Icon: BookOpen, ring: 'border-l-indigo-500', chip: 'bg-indigo-100 text-indigo-700', label: 'Class' },
   event: { Icon: Users, ring: 'border-l-purple-500', chip: 'bg-purple-100 text-purple-700', label: 'Event' },
   wellbeing: { Icon: HeartPulse, ring: 'border-l-rose-500', chip: 'bg-rose-100 text-rose-700', label: 'Wellbeing' },
+  empathy_alert: { Icon: HeartHandshake, ring: 'border-l-pink-500', chip: 'bg-pink-100 text-pink-700', label: 'Empathy Mesh' },
   budget: { Icon: Wallet, ring: 'border-l-amber-500', chip: 'bg-amber-100 text-amber-700', label: 'Budget' },
 };
 

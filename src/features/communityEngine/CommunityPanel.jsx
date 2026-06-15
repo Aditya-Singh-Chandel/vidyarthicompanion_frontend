@@ -30,6 +30,10 @@ import {
   TrendingUp,
   Minus,
   History,
+  HeartHandshake,
+  CalendarCheck,
+  Clock3,
+  UserRound,
 } from 'lucide-react';
 import { natureOf, statusOf } from './communityMeta';
 import {
@@ -43,6 +47,7 @@ import {
   castMessVote,
   updateBaseline,
   getNodeBaseline,
+  getMeetupSlots,
 } from './communityApi';
 import { getMealPlanTier } from '@/features/pocketBuddy/pocketApi';
 import { formatINR } from '@/features/pocketBuddy/pocketMeta';
@@ -456,6 +461,110 @@ function MealPlanSuggestion({ nodeId, refreshKey }) {
   );
 }
 
+/** Empathy Mesh: member list + per-member "Meet Up" free-slot finder. */
+function EmpathyMeshPanel({ nodeId }) {
+  const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState([]);
+  const [busyId, setBusyId] = useState(null);
+  const [result, setResult] = useState(null); // { memberId, member, slots }
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const data = await getNodeMembers(nodeId);
+      if (cancelled) return;
+      if (data) setMembers(data.members || []);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [nodeId]);
+
+  // Find a shared free slot with a fellow member. The backend rejects meeting
+  // yourself, so the action is safe for every row.
+  const findMeetUp = async (memberId) => {
+    setBusyId(memberId);
+    setResult(null);
+    const data = await getMeetupSlots(nodeId, memberId);
+    setBusyId(null);
+    if (data) setResult({ memberId, ...data });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 text-sm text-emerald-700">
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading your Empathy Mesh…
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm">
+      <p className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
+        <HeartHandshake className="h-4 w-4 text-emerald-600" /> Empathy Mesh members
+      </p>
+      <p className="mt-0.5 text-xs text-gray-500">
+        Tap <span className="font-semibold text-emerald-700">Meet Up</span> to find a free slot in the next 3 days
+        (8am–11pm) you both share.
+      </p>
+
+      <ul className="mt-3 space-y-1.5">
+        {members.map((m) => (
+          <li
+            key={m.userId}
+            className="flex items-center gap-3 rounded-xl bg-gray-50/70 px-3 py-2 ring-1 ring-inset ring-gray-200/70"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+              <UserRound className="h-4 w-4" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-1.5">
+                <span className="truncate text-sm font-semibold text-gray-800">{m.name}</span>
+                {m.isCr && <Crown className="h-3 w-3 shrink-0 text-amber-500" />}
+              </span>
+            </span>
+            <button
+              onClick={() => findMeetUp(m.userId)}
+              disabled={busyId === m.userId}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+            >
+              {busyId === m.userId ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CalendarCheck className="h-3.5 w-3.5" />}
+              Meet Up
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {result && (
+        <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
+          <p className="text-xs font-bold text-emerald-800">
+            Free slots with {result.member?.name || 'this member'} (next {result.windowDays} days)
+          </p>
+          {result.slots.length === 0 ? (
+            <p className="mt-1 text-xs text-emerald-700/80">
+              No shared free slot found in the next {result.windowDays} days — your schedules are packed.
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-1">
+              {result.slots.slice(0, 6).map((s, i) => (
+                <li key={i} className="flex items-center gap-2 text-xs text-emerald-900">
+                  <Clock3 className="h-3 w-3 text-emerald-500" />
+                  <span className="font-semibold">{s.dateLabel}</span>
+                  <span>
+                    {s.start}–{s.end}
+                  </span>
+                  <span className="text-emerald-700/70">({Math.round(s.durationMin / 60 * 10) / 10}h free)</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Admin-only editor for a Class community's baseline timetable. */
 function BaselineEditor({ node, onSaved }) {
   const [slots, setSlots] = useState(() =>
@@ -850,6 +959,9 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
           <MealPlanSuggestion nodeId={nodeId} refreshKey={mealPlanRefresh} />
         </>
       )}
+
+      {/* Empathy Mesh: member list + Meet Up free-slot finder. */}
+      {node.nodeType === 'Empathy' && <EmpathyMeshPanel nodeId={nodeId} />}
 
       {/* Verified flow banner for accountability communities */}
       {node.votingEnabled && (

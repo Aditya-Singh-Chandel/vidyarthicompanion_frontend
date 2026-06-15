@@ -222,6 +222,21 @@ export async function getNodeMembers(nodeId) {
 }
 
 /**
+ * Empathy Mesh "Meet Up": shared free slots (08:00–23:00) over the next 3 days
+ * between the current user and a fellow member.
+ * @returns {Promise<{member:object, slots:Array, windowDays:number}|null>}
+ */
+export async function getMeetupSlots(nodeId, memberId) {
+  try {
+    const response = await apiClient.get(`/community/nodes/${nodeId}/meetup/${memberId}`);
+    return response.data?.data ?? null;
+  } catch (error) {
+    console.error("getMeetupSlots failed:", error);
+    return null;
+  }
+}
+
+/**
  * A community's own column of updates (all statuses) plus its metadata.
  * @returns {Promise<{node:object, updates:Array}|null>}
  */
