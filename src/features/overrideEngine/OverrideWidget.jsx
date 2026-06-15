@@ -39,6 +39,7 @@ function OverrideWidget() {
   const [mDate, setMDate] = useState("");
   const [mTime, setMTime] = useState("");
   const [mLocation, setMLocation] = useState("");
+  const [mCategory, setMCategory] = useState("deadline"); // 'alert' | 'deadline'
 
   const previewUrlRef = useRef(null);
 
@@ -123,6 +124,7 @@ function OverrideWidget() {
       date: mDate,
       time: mTime,
       location: mLocation,
+      category: mCategory,
       nodeId: shareNodeId || null,
     });
     if (res?.success) {
@@ -282,6 +284,27 @@ function OverrideWidget() {
                 className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none disabled:opacity-60"
               />
             </div>
+            <div>
+              <span className="block text-sm font-medium text-gray-700">Classify as</span>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                {[
+                  { value: "deadline", label: "Deadline", active: "border-red-300 bg-red-50 text-red-700" },
+                  { value: "alert", label: "Alert", active: "border-sky-300 bg-sky-50 text-sky-700" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setMCategory(opt.value)}
+                    disabled={isUploading}
+                    className={`rounded-lg border px-3 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+                      mCategory === opt.value ? opt.active : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="text-xs text-gray-400">No date? It defaults to today.</p>
           </div>
         )}
@@ -333,19 +356,45 @@ function OverrideWidget() {
         {statusMsg && <p className="mt-3 text-center text-xs font-medium text-indigo-700">{statusMsg}</p>}
       </div>
 
-      {/* Render extracted / added events */}
-      <div className="space-y-4">
-        {responseEvents.map((event, index) => (
-          <ZeroUiActionCard
-            key={event._id || index}
-            eventName={event.eventName || "Unknown Event"}
-            date={formatIsoDate(event.date || new Date().toISOString())}
-            location={event.location || "TBD"}
-            confidenceScore={event.confidenceScore || 0}
-            systemAction="AI Verification Complete. Safe-Skip active if needed."
-          />
-        ))}
-      </div>
+      {/* Render extracted / added events, grouped into Deadlines and Alerts */}
+      {responseEvents.length > 0 && (
+        <div className="space-y-6">
+          {[
+            { key: "deadline", title: "Deadlines", accent: "text-red-600", empty: "No deadlines found." },
+            { key: "alert", title: "Alerts", accent: "text-sky-600", empty: "No alerts found." },
+          ].map((group) => {
+            const items = responseEvents.filter(
+              (e) => (String(e.category).toLowerCase() === "deadline" ? "deadline" : "alert") === group.key
+            );
+            if (items.length === 0) return null;
+            return (
+              <div key={group.key} className="space-y-4">
+                <h3 className={`flex items-center gap-2 text-sm font-bold uppercase tracking-wide ${group.accent}`}>
+                  {group.title}
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">
+                    {items.length}
+                  </span>
+                </h3>
+                {items.map((event, index) => (
+                  <ZeroUiActionCard
+                    key={event._id || `${group.key}-${index}`}
+                    eventName={event.eventName || "Unknown Event"}
+                    category={event.category || group.key}
+                    date={formatIsoDate(event.date || new Date().toISOString())}
+                    location={event.location || "TBD"}
+                    confidenceScore={event.confidenceScore || 0}
+                    systemAction={
+                      group.key === "deadline"
+                        ? "Tracked as a deadline. Reminders scheduled before it's due."
+                        : "Logged as an alert. Added to your calendar feed."
+                    }
+                  />
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -63,7 +63,7 @@ export default verifyScheduleOverride;
  * @param {object} params - { eventName, date (YYYY-MM-DD), time (HH:MM), location, nodeId }
  * @returns {Promise<object|null>} { status, message, data } or null on failure.
  */
-export async function createManualEvent({ eventName, date, time, location, nodeId }) {
+export async function createManualEvent({ eventName, date, time, location, nodeId, category }) {
   try {
     const response = await apiClient.post("/overrides/manual", {
       eventName,
@@ -71,6 +71,7 @@ export async function createManualEvent({ eventName, date, time, location, nodeI
       time: time || null,
       location,
       nodeId: nodeId || null,
+      category: category === "deadline" ? "deadline" : "alert",
     });
     return response.data;
   } catch (error) {

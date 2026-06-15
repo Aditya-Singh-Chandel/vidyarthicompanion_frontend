@@ -20,12 +20,19 @@ function ZeroUiActionCard({
   location,
   confidenceScore = 0,
   systemAction,
+  category = "alert",
 }) {
   // Normalize and clamp the confidence score, then convert to a percentage.
   const safeScore = Number.isFinite(confidenceScore) ? confidenceScore : 0;
   const clampedScore = Math.min(Math.max(safeScore, 0), 1);
   const confidencePercent = Math.round(clampedScore * 100);
   const isHighConfidence = confidencePercent > 90;
+
+  // The override engine sorts every ingested item into a Deadline or an Alert.
+  const isDeadline = String(category).toLowerCase() === "deadline";
+  const categoryStyles = isDeadline
+    ? { badge: "bg-red-100 text-red-700 ring-red-600/20", label: "Deadline", lead: "Deadline detected" }
+    : { badge: "bg-sky-100 text-sky-700 ring-sky-600/20", label: "Alert", lead: "Alert detected" };
 
   // Confidence drives the color treatment of the badge + progress bar.
   const confidenceStyles = isHighConfidence
@@ -45,10 +52,12 @@ function ZeroUiActionCard({
       {/* Header: event title + confidence indicator */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500">
-            Action Required
-          </p>
-          <h3 className="mt-1 truncate text-lg font-bold text-gray-900">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ring-1 ring-inset ${categoryStyles.badge}`}
+          >
+            {categoryStyles.label}
+          </span>
+          <h3 className="mt-1.5 truncate text-lg font-bold text-gray-900">
             {eventName || "Untitled Event"}
           </h3>
         </div>
