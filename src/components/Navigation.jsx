@@ -34,10 +34,10 @@ export default function Navigation() {
   const roleLabel = ROLE_LABELS[user?.role] || 'Student';
 
   return (
-    <div className="relative z-50 flex h-screen w-64 flex-col border-r border-gray-200/80 bg-[rgba(252,247,238,0.85)] shadow-[0_0_40px_-20px_rgba(31,28,21,0.4)] backdrop-blur-xl">
+    <div className="relative z-50 flex h-screen w-64 flex-col border-r border-white/60 bg-white/55 shadow-[0_0_50px_-20px_rgba(109,94,252,0.5)] backdrop-blur-2xl">
       {/* Brand */}
-      <div className="flex h-20 shrink-0 items-center gap-2.5 border-b border-gray-100 px-6">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-[0_8px_20px_-6px_rgba(194,112,47,0.7)]">
+      <div className="flex h-20 shrink-0 items-center gap-2.5 border-b border-white/50 px-6">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-[0_10px_24px_-6px_rgba(109,94,252,0.8)]">
           <Compass className="h-5 w-5" />
         </span>
         <div className="leading-none">
@@ -102,7 +102,7 @@ export default function Navigation() {
                 : 'bg-gray-100/70 ring-gray-200 hover:bg-gray-100'
             }`}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 font-display font-bold text-white shadow-[0_8px_18px_-6px_rgba(194,112,47,0.7)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 font-display font-bold text-white shadow-[0_10px_22px_-6px_rgba(109,94,252,0.8)]">
               {initial}
             </div>
             <div className="flex flex-col truncate">
