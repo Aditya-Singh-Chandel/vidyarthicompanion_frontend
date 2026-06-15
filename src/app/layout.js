@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/features/authEngine/AuthContext";
 import AppShell from "@/components/AppShell";
 import ScrollReveal from "@/components/ScrollReveal";
+import AuroraBackground from "@/components/AuroraBackground";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="flex h-screen overflow-hidden bg-gray-50 text-gray-900">
+        <AuroraBackground />
         <AuthProvider>
           <AppShell>{children}</AppShell>
         </AuthProvider>

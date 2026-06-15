@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 /* =============================================================
-   CampusFlow — "Aurelia" Heritage Design Language
-   Re-skins the whole app by overriding Tailwind's theme tokens.
-   Because Tailwind v4 builds utilities from these CSS variables,
-   every existing `bg-indigo-600`, `text-gray-500`, `border-gray-200`
-   across the app automatically adopts the new palette.
+   CampusFlow — "Aurora" Design Language
+   Vivid indigo-violet accent, cool glass surfaces, animated
+   aurora backdrop. Re-skins the whole app by overriding
+   Tailwind v4 theme tokens + enhancing common utilities so
+   existing markup turns translucent & dynamic with no rewrites.
    ============================================================= */
 
 @theme inline {
@@ -13,112 +13,166 @@
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-fraunces);
 
-  /* ---- BRAND ACCENT: indigo ramp -> warm amber/terracotta ---- */
-  --color-indigo-50:  #fbf1e4;
-  --color-indigo-100: #f5ddbf;
-  --color-indigo-200: #eec594;
-  --color-indigo-300: #e3a866;
-  --color-indigo-400: #d98a45;
-  --color-indigo-500: #cf7c38;
-  --color-indigo-600: #c2702f;
-  --color-indigo-700: #9c5526;
-  --color-indigo-800: #7a4220;
-  --color-indigo-900: #5c331a;
+  /* ---- BRAND ACCENT: vivid indigo -> violet ---- */
+  --color-indigo-50:  #eef0ff;
+  --color-indigo-100: #e0e3ff;
+  --color-indigo-200: #c7caff;
+  --color-indigo-300: #a6a6ff;
+  --color-indigo-400: #8c84fc;
+  --color-indigo-500: #7b6cf7;
+  --color-indigo-600: #6d5efc;
+  --color-indigo-700: #5942e6;
+  --color-indigo-800: #4634bd;
+  --color-indigo-900: #382c93;
 
-  /* ---- NEUTRALS: gray ramp -> warm stone / parchment / ink ---- */
-  --color-gray-50:  #faf6ee;
-  --color-gray-100: #f3ecdf;
-  --color-gray-200: #e7dcc8;
-  --color-gray-300: #d6c7ad;
-  --color-gray-400: #ab9f88;
-  --color-gray-500: #837969;
-  --color-gray-600: #5f574a;
-  --color-gray-700: #453f34;
-  --color-gray-800: #2c281f;
-  --color-gray-900: #1f1c15;
+  /* ---- NEUTRALS: cool slate ---- */
+  --color-gray-50:  #f6f7fb;
+  --color-gray-100: #eef0f7;
+  --color-gray-200: #e2e5f0;
+  --color-gray-300: #cdd2e1;
+  --color-gray-400: #99a0b8;
+  --color-gray-500: #6b7186;
+  --color-gray-600: #4d5366;
+  --color-gray-700: #373c4d;
+  --color-gray-800: #232634;
+  --color-gray-900: #141726;
 
-  /* ---- semantic surface tokens ---- */
-  --color-background: #f6efe1;
-  --color-foreground: #1f1c15;
+  --color-background: #eef1fb;
+  --color-foreground: #141726;
 }
 
 :root {
-  --background: #f6efe1;
-  --foreground: #1f1c15;
+  --background: #eef1fb;
+  --foreground: #141726;
 
-  --brand: #c2702f;
-  --brand-strong: #9c5526;
-  --brand-soft: #fbf1e4;
-  --forest: #1b3a34;
-  --ink: #1f1c15;
+  --brand: #6d5efc;
+  --brand-2: #9b5cff;
+  --brand-3: #38c6e6;
+  --brand-4: #ff6bcb;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --glass: rgba(255, 255, 255, 0.66);
+  --glass-line: rgba(255, 255, 255, 0.75);
 }
 
 /* ----------------------------- BASE ----------------------------- */
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; background: linear-gradient(180deg, #eef1fb 0%, #e7ecfa 100%); }
 
 body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  /* layered parchment depth — soft amber + forest glows */
-  background-color: #f6efe1;
-  background-image:
-    radial-gradient(900px circle at 12% -5%, rgba(217, 138, 69, 0.16), transparent 55%),
-    radial-gradient(1000px circle at 100% 0%, rgba(27, 58, 52, 0.12), transparent 50%),
-    radial-gradient(700px circle at 50% 120%, rgba(194, 112, 47, 0.10), transparent 60%);
-  background-attachment: fixed;
+  background: transparent;
+  position: relative;
 }
 
-/* heritage serif for display headings (logo, page titles, h1–h3) */
 h1, h2, h3, .font-display {
   font-family: var(--font-fraunces), Georgia, serif;
   letter-spacing: -0.015em;
 }
 
-::selection { background: var(--brand); color: #fff7ec; }
+::selection { background: var(--brand); color: #fff; }
+
+/* ----------------------------- ANIMATED AURORA BACKDROP ----------------------------- */
+.cf-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+}
+.cf-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+  will-change: transform;
+}
+.cf-blob-1 { width: 46vw; height: 46vw; left: -8vw; top: -10vw;
+  background: radial-gradient(circle, #6d5efc, transparent 65%); animation: cf-orbit 26s var(--ease-out) infinite; }
+.cf-blob-2 { width: 40vw; height: 40vw; right: -6vw; top: -4vw;
+  background: radial-gradient(circle, #38c6e6, transparent 65%); animation: cf-orbit 32s var(--ease-out) infinite reverse; }
+.cf-blob-3 { width: 38vw; height: 38vw; left: 18vw; bottom: -16vw;
+  background: radial-gradient(circle, #ff6bcb, transparent 65%); animation: cf-orbit 30s var(--ease-out) infinite; }
+.cf-blob-4 { width: 34vw; height: 34vw; right: 8vw; bottom: -12vw;
+  background: radial-gradient(circle, #9b5cff, transparent 65%); animation: cf-orbit 28s var(--ease-out) infinite reverse; }
+.cf-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(20,23,38,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(20,23,38,0.04) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+}
+@keyframes cf-orbit {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(6vw, 5vw) scale(1.12); }
+  66%  { transform: translate(-5vw, 3vw) scale(0.94); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* ----------------------------- GLASSMORPHISM (auto-applied) ----------------------------- */
+/* Every opaque white surface becomes frosted glass over the aurora. */
+.bg-white {
+  background-color: var(--glass) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+}
+/* light page wrappers let the aurora glow through */
+.bg-gray-50 { background-color: rgba(246, 247, 251, 0.55) !important; }
+.bg-gray-100 { background-color: rgba(238, 240, 247, 0.7) !important; }
+
+/* dynamic hover lift + glow for card-like surfaces */
+.bg-white.rounded-xl, .bg-white.rounded-2xl, .bg-white.rounded-3xl {
+  transition: transform 0.45s var(--ease-out), box-shadow 0.45s var(--ease-out);
+}
+.bg-white.rounded-xl:hover, .bg-white.rounded-2xl:hover, .bg-white.rounded-3xl:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 60px -28px rgba(109, 94, 252, 0.45), 0 0 0 1px rgba(109, 94, 252, 0.1);
+}
+
+/* gradient + glow on the primary accent surfaces (buttons, avatars, badges) */
+.bg-indigo-600 {
+  background-image: linear-gradient(135deg, #8c84fc 0%, #6d5efc 50%, #5942e6 100%) !important;
+  background-size: 180% 180%;
+  animation: cf-shift 6s ease infinite;
+}
+@keyframes cf-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* gradient text helper */
+.cf-gradient-text {
+  background: linear-gradient(120deg, #6d5efc, #9b5cff 40%, #38c6e6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 /* ----------------------------- SCROLLBAR ----------------------------- */
 ::-webkit-scrollbar { width: 11px; height: 11px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: #c8b48d;
+  background: linear-gradient(#9b5cff, #6d5efc);
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--brand); background-clip: content-box; }
 
 /* ----------------------------- FOCUS ----------------------------- */
-:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
 
 /* ----------------------------- MOTION UTILITIES ----------------------------- */
-@keyframes cf-rise {
-  from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: none; }
-}
-@keyframes cf-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes cf-float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-10px); }
-}
-@keyframes cf-shimmer {
-  100% { transform: translateX(100%); }
-}
+@keyframes cf-rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@keyframes cf-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cf-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes cf-shimmer { 100% { transform: translateX(100%); } }
+@keyframes cf-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
-/* page content gently rises in on load */
 .cf-page-enter { animation: cf-rise 0.6s var(--ease-out) both; }
 .cf-fade-in { animation: cf-fade 0.7s ease both; }
 .cf-float { animation: cf-float 7s var(--ease-out) infinite; }
 
-/* scroll-reveal (wired by ScrollReveal client component) */
 [data-reveal] {
   opacity: 0;
   transform: translateY(26px);
@@ -129,30 +183,14 @@ h1, h2, h3, .font-display {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .cf-page-enter, .cf-fade-in, .cf-float { animation: none !important; }
+  .cf-page-enter, .cf-fade-in, .cf-float, .cf-blob, .bg-indigo-600 { animation: none !important; }
   [data-reveal] { opacity: 1 !important; transform: none !important; transition: none !important; }
 }
 
-/* ----------------------------- REUSABLE CLASSES ----------------------------- */
-/* soft, layered "heritage card" — opt-in depth without touching markup colors */
-.cf-card {
-  background: rgba(255, 252, 246, 0.86);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  border: 1px solid var(--color-gray-200);
-  box-shadow: 0 1px 2px rgba(31, 28, 21, 0.04), 0 18px 40px -24px rgba(31, 28, 21, 0.30);
-  transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
-}
-.cf-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 1px 2px rgba(31, 28, 21, 0.04), 0 28px 56px -26px rgba(31, 28, 21, 0.38);
-}
-
-.cf-skeleton { position: relative; overflow: hidden; background: var(--color-gray-100); }
+/* ----------------------------- SKELETON ----------------------------- */
+.cf-skeleton { position: relative; overflow: hidden; background: rgba(255,255,255,0.5); }
 .cf-skeleton::after {
-  content: "";
-  position: absolute; inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
   animation: cf-shimmer 1.5s infinite;
 }
