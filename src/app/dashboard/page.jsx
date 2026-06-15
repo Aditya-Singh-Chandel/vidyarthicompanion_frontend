@@ -22,17 +22,6 @@ export default function DashboardPage() {
           <DailyPlanWidget />
         </div>
 
-        {/* Wallet vs Wellness: eat-in / eat-out / conserve recommendation */}
-        <section aria-labelledby="recommendation-heading" className="mb-8">
-          <h2
-            id="recommendation-heading"
-            className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500"
-          >
-            Today&apos;s Food Recommendation
-          </h2>
-          <DashboardRecommendation />
-        </section>
-
         {/* Top Grid: Urgent Actions & Interventions */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           
@@ -56,6 +45,11 @@ export default function DashboardPage() {
               Notifications
             </h2>
             <NotificationsWidget />
+
+            {/* Compact Wallet-vs-Wellness nudge; full card lives in PocketBuddy */}
+            <div className="mt-6">
+              <DashboardRecommendation />
+            </div>
           </section>
         </div>
 

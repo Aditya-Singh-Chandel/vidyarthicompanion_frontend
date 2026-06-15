@@ -1,24 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Wallet, PiggyBank, Utensils, Dumbbell, GraduationCap, HeartPulse, Loader2, Check } from 'lucide-react';
+import { Wallet, PiggyBank, Loader2, Check } from 'lucide-react';
 import { formatINR } from '@/features/pocketBuddy/pocketMeta';
 import { updateFinancial } from './profileApi';
 
 export default function FinancialSetup({ profile, onSaved }) {
   const [monthlyBudget, setMonthlyBudget] = useState(profile?.financial?.monthlyBudget ?? 8000);
   const [safeBufferPct, setSafeBufferPct] = useState(profile?.financial?.safeBufferPct ?? 0);
-  const [primaryMessNodeId, setPrimaryMessNodeId] = useState(profile?.primaryMessNodeId ?? '');
-  const [primaryGymNodeId, setPrimaryGymNodeId] = useState(profile?.primaryGymNodeId ?? '');
-  const [primaryClassNodeId, setPrimaryClassNodeId] = useState(profile?.primaryClassNodeId ?? '');
-  const [primaryEmpathyNodeId, setPrimaryEmpathyNodeId] = useState(profile?.primaryEmpathyNodeId ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const messCommunities = profile?.messCommunities ?? [];
-  const gymCommunities = profile?.gymCommunities ?? [];
-  const classCommunities = profile?.classCommunities ?? [];
-  const empathyCommunities = profile?.empathyCommunities ?? [];
   const effective = Math.round(monthlyBudget * (1 - safeBufferPct / 100));
 
   const handleSave = async () => {
@@ -27,10 +19,6 @@ export default function FinancialSetup({ profile, onSaved }) {
     const res = await updateFinancial({
       monthlyBudget: Number(monthlyBudget),
       safeBufferPct: Number(safeBufferPct),
-      primaryMessNodeId: primaryMessNodeId || null,
-      primaryGymNodeId: primaryGymNodeId || null,
-      primaryClassNodeId: primaryClassNodeId || null,
-      primaryEmpathyNodeId: primaryEmpathyNodeId || null,
     });
     setSaving(false);
     if (res) {
@@ -92,100 +80,6 @@ export default function FinancialSetup({ profile, onSaved }) {
           The AI hides {safeBufferPct}% of your budget. Spendable this month:{' '}
           <span className="font-bold">{formatINR(effective)}</span>.
         </p>
-      </div>
-
-      {/* Primary communities */}
-      <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-          Your fixed communities
-        </p>
-        <p className="mb-3 text-[11px] text-gray-400">
-          These choices pin <span className="font-semibold text-gray-500">Mess</span>,{' '}
-          <span className="font-semibold text-gray-500">Class</span> and{' '}
-          <span className="font-semibold text-gray-500">Empathy Mesh</span> to the top of your Communities page.
-        </p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <Utensils className="h-4 w-4 text-amber-600" /> Primary Mess community
-          </label>
-          <select
-            value={primaryMessNodeId}
-            onChange={(e) => setPrimaryMessNodeId(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          >
-            <option value="">None selected</option>
-            {messCommunities.map((c) => (
-              <option key={c.nodeId} value={c.nodeId}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          {messCommunities.length === 0 && (
-            <p className="mt-1 text-[11px] text-gray-400">Join a Mess community to enable food nudges.</p>
-          )}
-        </div>
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <Dumbbell className="h-4 w-4 text-indigo-600" /> Primary Gym community
-          </label>
-          <select
-            value={primaryGymNodeId}
-            onChange={(e) => setPrimaryGymNodeId(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          >
-            <option value="">None selected</option>
-            {gymCommunities.map((c) => (
-              <option key={c.nodeId} value={c.nodeId}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          {gymCommunities.length === 0 && (
-            <p className="mt-1 text-[11px] text-gray-400">Join a Gym community for protein/fuel tips.</p>
-          )}
-        </div>
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <GraduationCap className="h-4 w-4 text-violet-600" /> Primary Class community
-          </label>
-          <select
-            value={primaryClassNodeId}
-            onChange={(e) => setPrimaryClassNodeId(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          >
-            <option value="">None selected</option>
-            {classCommunities.map((c) => (
-              <option key={c.nodeId} value={c.nodeId}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          {classCommunities.length === 0 && (
-            <p className="mt-1 text-[11px] text-gray-400">Join a Class community to sync the timetable.</p>
-          )}
-        </div>
-        <div>
-          <label className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <HeartPulse className="h-4 w-4 text-emerald-600" /> Empathy Mesh
-          </label>
-          <select
-            value={primaryEmpathyNodeId}
-            onChange={(e) => setPrimaryEmpathyNodeId(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          >
-            <option value="">None selected</option>
-            {empathyCommunities.map((c) => (
-              <option key={c.nodeId} value={c.nodeId}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          {empathyCommunities.length === 0 && (
-            <p className="mt-1 text-[11px] text-gray-400">Join an Empathy Mesh for wellbeing nudges &amp; Meet Ups.</p>
-          )}
-        </div>
-        </div>
       </div>
 
       <button

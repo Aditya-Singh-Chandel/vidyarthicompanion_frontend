@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { CalendarRange, UtensilsCrossed, Wallet, Loader2, Sparkles, Settings } from 'lucide-react';
+import { CalendarRange, UtensilsCrossed, Wallet, Loader2, Sparkles, Users2 } from 'lucide-react';
 import AcademicSetup from '@/features/profileEngine/AcademicSetup';
 import MessSetup from '@/features/profileEngine/MessSetup';
 import FinancialSetup from '@/features/profileEngine/FinancialSetup';
-import SettingsPanel from '@/features/profileEngine/SettingsPanel';
+import CommunitiesSetup from '@/features/profileEngine/CommunitiesSetup';
 import { getProfile } from '@/features/profileEngine/profileApi';
 
 const TABS = [
   { id: 'academic', label: 'Class Schedule', Icon: CalendarRange },
   { id: 'mess', label: 'Mess Menu', Icon: UtensilsCrossed },
   { id: 'financial', label: 'Expense Limits', Icon: Wallet },
-  { id: 'settings', label: 'Settings', Icon: Settings },
+  { id: 'communities', label: 'Fixed Communities', Icon: Users2 },
 ];
 
 export default function ProfilePage() {
@@ -96,7 +96,7 @@ export default function ProfilePage() {
               {tab === 'academic' && <AcademicSetup profile={profile} onSaved={load} />}
               {tab === 'mess' && <MessSetup profile={profile} onSaved={load} />}
               {tab === 'financial' && <FinancialSetup profile={profile} onSaved={load} />}
-              {tab === 'settings' && <SettingsPanel profile={profile} />}
+              {tab === 'communities' && <CommunitiesSetup profile={profile} onSaved={load} />}
             </div>
           </>
         )}
