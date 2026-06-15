@@ -657,6 +657,117 @@ function BaselineEditor({ node, onSaved }) {
   );
 }
 
+/** Admin-only editor for a Mess community's baseline weekly menu. */
+function BaselineMenuEditor({ nodeId, onSaved }) {
+  const MEALS = ['breakfast', 'lunch', 'snacks', 'dinner'];
+  const [loading, setLoading] = useState(true);
+  const [menu, setMenu] = useState(() => {
+    const m = {};
+    for (const d of DAYS) m[d] = { breakfast: '', lunch: '', snacks: '', dinner: '' };
+    return m;
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const d = await getNodeBaseline(nodeId);
+      if (cancelled) return;
+      const existing = d?.menu || {};
+      setMenu(() => {
+        const m = {};
+        for (const day of DAYS) {
+          const src = existing[day] || {};
+          m[day] = {
+            breakfast: src.breakfast || '',
+            lunch: src.lunch || '',
+            snacks: src.snacks || '',
+            dinner: src.dinner || '',
+          };
+        }
+        return m;
+      });
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [nodeId]);
+
+  const updateCell = (day, meal, value) =>
+    setMenu((prev) => ({ ...prev, [day]: { ...prev[day], [meal]: value } }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    const res = await updateBaseline(nodeId, { menu });
+    setSaving(false);
+    if (res) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      onSaved?.();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-400 shadow-sm">
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading community menu…
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2 rounded-xl border border-amber-200 bg-white p-4 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-wide text-amber-700">Community menu</p>
+      <p className="text-[11px] text-gray-500">
+        Members who join sync this menu, and it powers their food nudges. One save updates everyone.
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-xs">
+          <thead>
+            <tr className="text-left text-gray-400">
+              <th className="p-2 font-semibold uppercase tracking-wide">Day</th>
+              {MEALS.map((m) => (
+                <th key={m} className="p-2 font-semibold capitalize">
+                  {m}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {DAYS.map((day) => (
+              <tr key={day} className="border-t border-gray-100">
+                <td className="p-2 font-semibold text-gray-700">{day.slice(0, 3)}</td>
+                {MEALS.map((meal) => (
+                  <td key={meal} className="p-1">
+                    <input
+                      value={menu[day][meal]}
+                      onChange={(e) => updateCell(day, meal, e.target.value)}
+                      placeholder="—"
+                      className="w-full rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-900 focus:border-amber-500 focus:outline-none"
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="pt-1">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 disabled:opacity-60"
+        >
+          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : saved ? <Check className="h-3.5 w-3.5" /> : null}
+          {saved ? 'Saved' : 'Save menu'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** Read-only weekly view of a community's current menu (Mess) or timetable (Academic), for any member. */
 function BaselineViewer({ nodeId, kind }) {
   const [loading, setLoading] = useState(true);
@@ -762,6 +873,7 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
   const [copied, setCopied] = useState(false);
   const [showManage, setShowManage] = useState(false);
   const [showBaseline, setShowBaseline] = useState(false);
+  const [showMenuEditor, setShowMenuEditor] = useState(false);
   const [showCommunityBaseline, setShowCommunityBaseline] = useState(false);
   const [mealPlanRefresh, setMealPlanRefresh] = useState(0);
 
@@ -916,6 +1028,14 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
                 <Pencil className="h-3.5 w-3.5" /> Edit timetable
               </button>
             )}
+            {node.nodeType === 'Mess' && (
+              <button
+                onClick={() => setShowMenuEditor((s) => !s)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100"
+              >
+                <Pencil className="h-3.5 w-3.5" /> Edit menu
+              </button>
+            )}
           </div>
         )}
 
@@ -950,6 +1070,10 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
 
       {showBaseline && node.isAdmin && node.nodeType === 'Academic' && (
         <BaselineEditor node={node} onSaved={load} />
+      )}
+
+      {showMenuEditor && node.isAdmin && node.nodeType === 'Mess' && (
+        <BaselineMenuEditor nodeId={nodeId} onSaved={load} />
       )}
 
       {/* Mess communities: per-meal Eatable / Leave voting for the current meal. */}

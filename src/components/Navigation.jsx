@@ -3,14 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, Wallet, UserCog, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Wallet, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/features/authEngine/AuthContext';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Community', href: '/community', icon: Users },
   { name: 'PocketBuddy', href: '/wallet', icon: Wallet },
-  { name: 'Profile', href: '/profile', icon: UserCog },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 const ROLE_LABELS = {
@@ -78,7 +78,15 @@ export default function Navigation() {
             Sign Out
           </button>
 
-          <div className="flex items-center gap-3 rounded-xl bg-gray-50 p-3 ring-1 ring-inset ring-gray-200">
+          <Link
+            href="/profile"
+            title="Open your profile"
+            className={`flex items-center gap-3 rounded-xl p-3 ring-1 ring-inset transition-all ${
+              pathname === '/profile'
+                ? 'bg-indigo-50 ring-indigo-100'
+                : 'bg-gray-50 ring-gray-200 hover:bg-gray-100'
+            }`}
+          >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white font-bold shadow-sm">
               {initial}
             </div>
@@ -86,7 +94,7 @@ export default function Navigation() {
               <span className="text-sm font-bold text-gray-900 truncate">{displayName}</span>
               <span className="text-xs text-gray-500 truncate">{roleLabel}</span>
             </div>
-          </div>
+          </Link>
         </div>
       </nav>
     </div>
