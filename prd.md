@@ -14,8 +14,8 @@
 
 | Name | College / University | Role | Email |
 |------|----------------------|------|-------|
-| *Soneesh Kumar Srivastava* | *[BIT Mesra]* | Backend Dev | *[]* |
-| *Aditya Singh Chandel* | *[III Lucknow]* | Frontend Dev | *[Email]* |
+| *Soneesh Kumar Srivastava* | *[BIT Mesra]* | Backend Dev | *[soneeshkumarsrivastava@gmail.com]* |
+| *Aditya Singh Chandel* | *[IIIT Lucknow]* | Frontend Dev | *[adityasinghchandel269@gmail.com]* |
 | *[Abhinav Sahu]* | *[BIT Mesra]* | ML / AI Engineer | *[abhinav.sahu2023@gmail.com]* |
 
 
@@ -186,18 +186,36 @@ Stateless Express engines scale horizontally behind a load balancer; MongoDB sha
 ### Where This Goes
 In 1–3 years VidyarthiCompanion becomes the **default operating system for student life** — every campus runs on community-verified schedules, budget-aware spending, and proactive wellbeing nudges, with the AI quietly handling the chaos so students focus on learning.
 
+In 1-3 years, this platform evolves from a campus-specific B2C utility into a universal, enterprise-grade "Predictive Human Capital Operating System." The big-picture vision is to fundamentally redefine how massive institutions interact with their populations. Instead of reacting to burnout and financial distress after they happen, our OS becomes the invisible, proactive guardian of institutional health. By proving our deterministic AI and neuro-inclusive Empathy Mesh in the chaotic crucible of college campuses, we will build the foundational infrastructure for how Gen-Z and Gen-Alpha navigate logistics, finances, and well-being as they transition into adulthood.
 ### Roadmap
 
 | Horizon | Milestone | Impact |
 |---------|-----------|--------|
-| 0–3 mo | Polish core engines, real Amazon Pay + UPI ingestion, mobile-friendly PWA | First pilot batch (1 college, ~2k students) |
-| 3–6 mo | Native sleep/step sensors, push notifications, multi-campus onboarding | 10+ colleges, ~50k students |
-| 6–12 mo | Bedrock-native AI, recommendation/carpool synergies, placement-prep module | Nationwide, 500k+ students |
+| 0–3 mo | The Campus Anchor (MVP Launch): Deploy the Verified Override Engine (Bedrock intent + consensus ticker) and PocketBuddy Mock Hub to a closed beta cohort at a flagship university. | 5,000 Active Users: Achieve an 80% reduction in manual scheduling queries and prove a 0% hallucination rate on verified calendar updates. |
+| 3–6 mo | The Ecosystem Handshake: Transition to live APIs. Integrate live Amazon Pay for zero-friction campus micro-transactions and Apple HealthKit/Google Fit for hyper-accurate biometric burnout detection. | 50,000 Active Users: Expand to 10+ campuses. Route $1M+ in local transactions; record a 30% reduction in reported daily financial anxiety. |
+| 6–12 mo | The Enterprise B2B Pivot: Launch the Campus Health & Logistics Index—an anonymized, macro-level predictive analytics dashboard sold to university administrations to forecast campus-wide burnout. | 500,000+ Users: Secure B2B pilot contracts with 5 major universities. Project a 10-15% reduction in academic dropouts linked to logistical/wellness fatigue. |
 
 ### Multi-Segment Expansion
+Our architecture—combining AI intent parsing, crowdsourced truth, and biometric correlation—is not limited to education. We have a clear, multi-segment path to scale our "Empathy & Consensus" engines across adjacent industries:
+
+Phase 1: Higher Education (Current): Solving the fragmented operational deficit for the global 250 million student demographic.
+
+Phase 2: Corporate HR & Workforce Logistics: The Empathy Mesh transitions into a corporate burnout-prevention tool. Young professionals face the exact same high-entropy communication channels (Slack/Teams) and scheduling chaos. Our OS will bridge corporate calendars, employee wellness benefits, and payroll integrations to prevent burnout and drastically reduce early-career employee churn.
+
+Phase 3: Hyper-Local Smart Cities: The Distributed Consensus Ticker and geo-transit aggregators expand into civic infrastructure. Municipalities will use our passive telemetry and crowdsourced truth modules to track local public transit efficiency, neighborhood-level service ratings, and community well-being in real-time, completely bypassing standard "survey fatigue."
+
 **Education → Hostels/PG living → Logistics (carpool/transit) → Campus commerce (mess/cafe/merchant graph) → Corporate onboarding & co-working communities.** The same sensor-engine-consensus core generalizes anywhere groups coordinate schedules, money, and wellbeing.
 
+
 ### Value Impact
+Users Impacted: Targeting 25 million active users across the tertiary and young-professional markets within 3 years (capturing 10% of the initial global TAM).
+
+Efficiency Gains: Reclaiming ~200 manual data-entry and reconciliation hours per user annually, generating 5 billion hours of reclaimed human productivity at our target scale.
+
+Cost Savings (B2B): By proactively intervening before a student or employee breaks, we project preventing 10-15% of attrition directly linked to burnout. For a standard university, this saves an average of $2.5 million in lost tuition and administrative overhead per semester.
+
+Revenue Potential: By natively routing daily campus and community micro-transactions through our Amazon Pay Hub, we establish early loyalty in the $50B+ Gen-Z daily spending market, turning a free student utility into a highly lucrative financial ecosystem funnel.
+
 Targeting **250M+ students globally**. Per student: fewer missed deadlines, **10–20% monthly savings** via budget guardrails, and measurable burnout reduction. At scale this is a verified-coordination layer worth hundreds of millions in saved time, money, and improved academic outcomes — plus Amazon Pay transaction volume and Bedrock consumption.
 
 ---
