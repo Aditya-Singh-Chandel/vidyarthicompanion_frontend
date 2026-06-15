@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const { register } = useAuth();
 
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
@@ -22,7 +23,7 @@ export default function RegisterPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await register({ name, email, password, role });
+      await register({ name, username, email, password, role });
       router.replace('/dashboard');
     } catch (err) {
       setError(err.message);
@@ -61,6 +62,26 @@ export default function RegisterPage() {
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 placeholder="Isha Patel"
               />
+            </div>
+
+            <div>
+              <label htmlFor="username" className="mb-1 block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <div className="flex items-center rounded-lg border border-gray-300 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+                <span className="pl-3 text-sm text-gray-400">@</span>
+                <input
+                  id="username"
+                  type="text"
+                  required
+                  minLength={3}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full rounded-lg border-0 bg-transparent px-2 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-0"
+                  placeholder="isha_patel"
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-400">Your public handle (letters, numbers, underscores).</p>
             </div>
 
             <div>

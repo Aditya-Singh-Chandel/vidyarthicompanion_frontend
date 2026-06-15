@@ -1,16 +1,18 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { CalendarRange, UtensilsCrossed, Wallet, Loader2, Sparkles } from 'lucide-react';
+import { CalendarRange, UtensilsCrossed, Wallet, Loader2, Sparkles, Settings } from 'lucide-react';
 import AcademicSetup from '@/features/profileEngine/AcademicSetup';
 import MessSetup from '@/features/profileEngine/MessSetup';
 import FinancialSetup from '@/features/profileEngine/FinancialSetup';
+import SettingsPanel from '@/features/profileEngine/SettingsPanel';
 import { getProfile } from '@/features/profileEngine/profileApi';
 
 const TABS = [
   { id: 'academic', label: 'Class Schedule', Icon: CalendarRange },
   { id: 'mess', label: 'Mess Menu', Icon: UtensilsCrossed },
   { id: 'financial', label: 'Expense Limits', Icon: Wallet },
+  { id: 'settings', label: 'Settings', Icon: Settings },
 ];
 
 export default function ProfilePage() {
@@ -41,7 +43,24 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="mx-auto max-w-4xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">Profile</h1>
+          {profile?.username ? (
+            <div className="mb-3 flex items-center gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-xl font-black text-white shadow-sm">
+                {(profile.username || 'S').charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">
+                  @{profile.username}
+                </h1>
+                <p className="truncate text-sm text-gray-500">
+                  {profile.name}
+                  {profile.email ? ` · ${profile.email}` : ''}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">Profile</h1>
+          )}
           <p className="mt-1 text-sm text-gray-500">
             Your ground-truth: official timetable, mess menu, and budget — the inputs CampusFlow and PocketBuddy run on.
           </p>
@@ -77,6 +96,7 @@ export default function ProfilePage() {
               {tab === 'academic' && <AcademicSetup profile={profile} onSaved={load} />}
               {tab === 'mess' && <MessSetup profile={profile} onSaved={load} />}
               {tab === 'financial' && <FinancialSetup profile={profile} onSaved={load} />}
+              {tab === 'settings' && <SettingsPanel profile={profile} />}
             </div>
           </>
         )}

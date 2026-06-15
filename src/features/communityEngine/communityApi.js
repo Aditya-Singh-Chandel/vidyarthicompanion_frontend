@@ -97,7 +97,12 @@ export async function joinNode(nodeId) {
 export async function joinByCode(code) {
   try {
     const response = await apiClient.post("/community/nodes/join-by-code", { code });
-    return { status: "joined", node: response.data?.data, message: response.data?.message };
+    return {
+      status: "joined",
+      node: response.data?.data,
+      conflict: response.data?.conflict ?? null,
+      message: response.data?.message,
+    };
   } catch (error) {
     console.error("joinByCode failed:", error);
     return { status: "error", message: error?.response?.data?.message || "Invalid invite code." };
