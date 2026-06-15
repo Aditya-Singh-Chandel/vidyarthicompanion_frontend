@@ -6,7 +6,7 @@ import { useAuth } from '@/features/authEngine/AuthContext';
 import Navigation from './Navigation';
 
 // Routes reachable without authentication.
-const PUBLIC_ROUTES = ['/login', '/register'];
+const PUBLIC_ROUTES = ['/login', '/register', '/', '/features'];
 
 function FullScreenLoader() {
   return (
@@ -40,16 +40,17 @@ export default function AppShell({ children }) {
     if (loading) return;
     if (!user && !isPublic) {
       router.replace('/login');
-    } else if (user && isPublic) {
+    } else if (user && (pathname === '/login' || pathname === '/register')) {
       router.replace('/dashboard');
     }
-  }, [loading, user, isPublic, router]);
+  }, [loading, user, isPublic, pathname, router]);
 
   if (loading) return <FullScreenLoader />;
 
-  // Public pages (login/register): render without the app chrome.
+  // Public pages (login/register/landing): render without the app chrome.
   if (isPublic) {
-    return <div className="h-screen w-full overflow-y-auto bg-gray-50">{children}</div>;
+    const isAuthPage = pathname === '/login' || pathname === '/register';
+    return <div className={`h-screen w-full overflow-y-auto ${isAuthPage ? 'bg-gray-50' : ''}`}>{children}</div>;
   }
 
   // Awaiting redirect for unauthenticated access to a protected route.

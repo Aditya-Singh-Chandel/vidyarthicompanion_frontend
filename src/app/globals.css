@@ -1,76 +1,281 @@
 @import "tailwindcss";
 
-/* =============================================================
-   VidyarthiCompanion — "Aurora" Design Language
-   Vivid indigo-violet accent, cool glass surfaces, animated
-   aurora backdrop. Re-skins the whole app by overriding
-   Tailwind v4 theme tokens + enhancing common utilities so
-   existing markup turns translucent & dynamic with no rewrites.
-   ============================================================= */
-
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-fraunces);
-
-  /* ---- BRAND ACCENT: vivid indigo -> violet ---- */
-  --color-indigo-50:  #eef0ff;
-  --color-indigo-100: #e0e3ff;
-  --color-indigo-200: #c7caff;
-  --color-indigo-300: #a6a6ff;
-  --color-indigo-400: #8c84fc;
-  --color-indigo-500: #7b6cf7;
-  --color-indigo-600: #6d5efc;
-  --color-indigo-700: #5942e6;
-  --color-indigo-800: #4634bd;
-  --color-indigo-900: #382c93;
-
-  /* ---- NEUTRALS: cool slate ---- */
-  --color-gray-50:  #f6f7fb;
-  --color-gray-100: #eef0f7;
-  --color-gray-200: #e2e5f0;
-  --color-gray-300: #cdd2e1;
-  --color-gray-400: #99a0b8;
-  --color-gray-500: #6b7186;
-  --color-gray-600: #4d5366;
-  --color-gray-700: #373c4d;
-  --color-gray-800: #232634;
-  --color-gray-900: #141726;
-
-  --color-background: #eef1fb;
-  --color-foreground: #141726;
-}
+/* ── Midnight Monsoon Design System ──
+   Mood: twilight optimism — deep ink nights, electric teal currents, saffron sparks
+   Lighting: soft ambient glow, layered floating depth, kinetic SPA motion
+*/
 
 :root {
-  --background: #eef1fb;
-  --foreground: #141726;
+  /* Palette */
+  --ink: #0b1220;
+  --ink-soft: #141d2e;
+  --ink-muted: #1e2a3f;
+  --teal: #14b8a6;
+  --teal-bright: #2dd4bf;
+  --teal-glow: rgba(20, 184, 166, 0.35);
+  --saffron: #f59e0b;
+  --saffron-bright: #fbbf24;
+  --saffron-glow: rgba(245, 158, 11, 0.3);
+  --mist: #f0f4f8;
+  --cloud: #e8edf4;
+  --surface: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-on-dark: #f1f5f9;
+  --text-muted-dark: #94a3b8;
+  --danger: #f43f5e;
+  --success: #10b981;
 
-  --brand: #6d5efc;
-  --brand-2: #9b5cff;
-  --brand-3: #38c6e6;
-  --brand-4: #ff6bcb;
+  /* Spacing scale */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
 
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --glass: rgba(255, 255, 255, 0.66);
-  --glass-line: rgba(255, 255, 255, 0.75);
+  /* Radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-pill: 9999px;
+
+  /* Shadows (layered depth) */
+  --shadow-float: 0 4px 24px rgba(11, 18, 32, 0.08), 0 1px 3px rgba(11, 18, 32, 0.06);
+  --shadow-lift: 0 12px 40px rgba(11, 18, 32, 0.12), 0 4px 12px rgba(11, 18, 32, 0.06);
+  --shadow-glow-teal: 0 0 40px var(--teal-glow);
+  --shadow-glow-saffron: 0 0 32px var(--saffron-glow);
+
+  --background: var(--mist);
+  --foreground: var(--text-primary);
 }
 
-/* ----------------------------- BASE ----------------------------- */
-html { scroll-behavior: smooth; background: linear-gradient(180deg, #eef1fb 0%, #e7ecfa 100%); }
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-teal: var(--teal);
+  --color-teal-bright: var(--teal-bright);
+  --color-saffron: var(--saffron);
+  --color-mist: var(--mist);
+  --color-surface: var(--surface);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
 
 body {
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  background: transparent;
-  position: relative;
 }
 
-h1, h2, h3, .font-display {
-  font-family: var(--font-fraunces), Georgia, serif;
-  letter-spacing: -0.015em;
+/* Typography hierarchy */
+.text-display {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 
-::selection { background: var(--brand); color: #fff; }
+.text-headline {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.text-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.text-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.text-mono-data {
+  font-family: var(--font-geist-mono), monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Surfaces */
+.surface-mist {
+  background-color: var(--mist);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 10% 0%, rgba(20, 184, 166, 0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 10%, rgba(245, 158, 11, 0.06) 0%, transparent 50%);
+}
+
+.surface-ink {
+  background-color: var(--ink);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 15% 30%, rgba(20, 184, 166, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 85% 15%, rgba(245, 158, 11, 0.12) 0%, transparent 50%),
+    linear-gradient(165deg, var(--ink) 0%, var(--ink-soft) 45%, var(--ink) 100%);
+}
+
+.glass-surface {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: var(--shadow-float);
+}
+
+.glass-dark {
+  background: rgba(20, 29, 46, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+/* Depth orbs (parallax layers) */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.orb-teal {
+  background: var(--teal);
+  opacity: 0.25;
+}
+
+.orb-saffron {
+  background: var(--saffron);
+  opacity: 0.2;
+}
+
+/* Card treatments */
+.card-base {
+  border-radius: var(--radius-2xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+  border: 1px solid var(--cloud);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+}
+
+.card-base:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift);
+}
+
+.card-cut-corner {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+}
+
+/* Animations */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease both;
+}
+
+.animate-slide-right {
+  animation: slide-in-right 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.reveal-hidden {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--cloud) 25%, #f8fafc 50%, var(--cloud) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Page transition */
+.page-enter {
+  animation: fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Journey connector line */
+.journey-line {
+  background: linear-gradient(90deg, var(--teal), var(--saffron));
+  height: 2px;
+  opacity: 0.5;
+}
+
+/* Sticky nav states */
+.nav-sticky {
+  transition: background 0.3s ease, box-shadow 0.3s ease, padding 0.3s ease;
+}
+
+.nav-sticky.scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-float);
+}
+
+/* Overlay backdrop */
+.overlay-backdrop {
+  background: rgba(11, 18, 32, 0.55);
+  backdrop-filter: blur(4px);
+  animation: fade-in 0.25s ease both;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* --- GitHub Internal UI Styles --- */
 
 /* ----------------------------- ANIMATED AURORA BACKDROP ----------------------------- */
 .cf-aurora {
@@ -193,4 +398,20 @@ h1, h2, h3, .font-display {
   content: ""; position: absolute; inset: 0; transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
   animation: cf-shimmer 1.5s infinite;
+}
+
+/* --- GitHub Variables --- */
+
+:root {
+  --background: #eef1fb;
+  --foreground: #141726;
+
+  --brand: #6d5efc;
+  --brand-2: #9b5cff;
+  --brand-3: #38c6e6;
+  --brand-4: #ff6bcb;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --glass: rgba(255, 255, 255, 0.66);
+  --glass-line: rgba(255, 255, 255, 0.75);
 }

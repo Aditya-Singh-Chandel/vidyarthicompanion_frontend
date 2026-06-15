@@ -1,45 +1,54 @@
 'use client';
 
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useEffect, useRef, useState } from 'react';
 
-/**
- * Wires scroll-triggered reveal animations app-wide.
- * Any element with `data-reveal` fades/slides in when it enters the viewport.
- * Re-scans on route change so newly mounted pages animate too.
- */
-export default function ScrollReveal() {
-  const pathname = usePathname();
+export default function ScrollReveal({ children, delay = 0, direction = 'up', className = '' }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
 
   useEffect(() => {
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const els = Array.from(document.querySelectorAll('[data-reveal]:not(.cf-visible)'));
+    const el = ref.current;
+    if (!el) return;
 
-    if (prefersReduced || !('IntersectionObserver' in window)) {
-      els.forEach((el) => el.classList.add('cf-visible'));
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('cf-visible');
-            io.unobserve(entry.target);
-          }
-        });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(el);
+        }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
     );
 
-    // small delay so freshly-routed DOM is settled
-    const t = setTimeout(() => els.forEach((el) => io.observe(el)), 60);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
-    return () => {
-      clearTimeout(t);
-      io.disconnect();
-    };
-  }, [pathname]);
+  // Determine initial transform based on direction
+  const getTransform = () => {
+    if (isVisible) return 'translateY(0) translateX(0)';
+    switch (direction) {
+      case 'up': return 'translateY(28px)';
+      case 'down': return 'translateY(-28px)';
+      case 'left': return 'translateX(28px)';
+      case 'right': return 'translateX(-28px)';
+      default: return 'translateY(28px)';
+    }
+  };
 
-  return null;
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: getTransform(),
+        transition: `opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)`,
+        transitionDelay: `${delay}ms`,
+        willChange: 'opacity, transform',
+      }}
+    >
+      {children}
+    </div>
+  );
 }
