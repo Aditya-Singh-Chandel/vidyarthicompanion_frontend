@@ -25,6 +25,11 @@ import {
   Plus,
   Trash2,
   BookOpen,
+  Wallet,
+  TrendingDown,
+  TrendingUp,
+  Minus,
+  History,
 } from 'lucide-react';
 import { natureOf, statusOf } from './communityMeta';
 import {
@@ -39,6 +44,8 @@ import {
   updateBaseline,
   getNodeBaseline,
 } from './communityApi';
+import { getMealPlanTier } from '@/features/pocketBuddy/pocketApi';
+import { formatINR } from '@/features/pocketBuddy/pocketMeta';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -246,7 +253,7 @@ function ManagePanel({ nodeId, onChanged }) {
 }
 
 /** Mess community per-meal voting (Eatable / Leave), time-gated to the current meal. */
-function MessMealVoting({ nodeId }) {
+function MessMealVoting({ nodeId, onVoted }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -274,6 +281,7 @@ function MessMealVoting({ nodeId }) {
         slots: res.slots,
         myVotes: { ...prev.myVotes, [prev.currentSlot]: res.myVerdict },
       }));
+      onVoted?.();
     }
     setBusy(false);
   };
@@ -309,6 +317,29 @@ function MessMealVoting({ nodeId }) {
         </p>
       )}
 
+      {data.preSuggestion && data.preSuggestion.likelihood !== 'no_data' && (
+        <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-white/70 px-2.5 py-1.5 text-[11px] text-amber-800 ring-1 ring-inset ring-amber-200">
+          <History className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+          <span>
+            {(() => {
+              const p = data.preSuggestion;
+              const lean =
+                p.likelihood === 'likely_good'
+                  ? 'usually eatable'
+                  : p.likelihood === 'likely_poor'
+                  ? 'often skipped'
+                  : 'a mixed bag';
+              return (
+                <>
+                  Past {p.weekday}s: {p.slot} is <span className="font-semibold">{lean}</span>
+                  {p.eatablePct != null ? ` (${p.eatablePct}% eatable, ${p.sampleVotes} votes)` : ''}.
+                </>
+              );
+            })()}
+          </span>
+        </div>
+      )}
+
       <div className="mt-3 flex gap-2">
         <button
           onClick={() => vote('eatable')}
@@ -341,6 +372,86 @@ function MessMealVoting({ nodeId }) {
       <p className="mt-2 text-[11px] text-amber-700/80">
         A &quot;Leave&quot; majority nudges PocketBuddy to suggest a wallet-safe meal outside.
       </p>
+    </div>
+  );
+}
+
+/** Budget-tiered meal-plan suggestion (low / mid / high) shown after a mess vote update. */
+function MealPlanSuggestion({ nodeId, refreshKey }) {
+  const [plan, setPlan] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const p = await getMealPlanTier();
+      if (cancelled) return;
+      setPlan(p);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Re-fetch when a vote updates the mess "notification".
+  }, [nodeId, refreshKey]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 text-sm text-indigo-700">
+        <Loader2 className="h-4 w-4 animate-spin" /> Building your budget meal plan…
+      </div>
+    );
+  }
+  if (!plan) return null;
+
+  const TIER = {
+    low: { Icon: TrendingDown, badge: 'bg-rose-100 text-rose-700 ring-rose-600/20', accent: 'text-rose-700', card: 'border-rose-200 bg-rose-50/50' },
+    mid: { Icon: Minus, badge: 'bg-amber-100 text-amber-700 ring-amber-600/20', accent: 'text-amber-700', card: 'border-amber-200 bg-amber-50/40' },
+    high: { Icon: TrendingUp, badge: 'bg-emerald-100 text-emerald-700 ring-emerald-600/20', accent: 'text-emerald-700', card: 'border-emerald-200 bg-emerald-50/50' },
+  };
+  const t = TIER[plan.tier] || TIER.mid;
+  const TierIcon = t.Icon;
+  const meals = plan.meals || {};
+  const rows = [
+    { slot: 'Breakfast', meal: meals.breakfast },
+    { slot: 'Lunch', meal: meals.lunch },
+    { slot: 'Dinner', meal: meals.dinner },
+  ].filter((r) => r.meal);
+
+  return (
+    <div className={`rounded-2xl border p-4 shadow-sm ${t.card}`}>
+      <div className="flex items-center justify-between">
+        <p className="flex items-center gap-1.5 text-sm font-bold text-gray-900">
+          <Wallet className="h-4 w-4 text-gray-500" /> Suggested meal plan
+        </p>
+        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ring-1 ring-inset ${t.badge}`}>
+          <TierIcon className="h-3 w-3" /> {plan.tierLabel}
+        </span>
+      </div>
+      <p className="mt-1 text-xs text-gray-600">{plan.headline}</p>
+
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500">
+        <span>Set daily avg <span className={`font-semibold ${t.accent}`}>{formatINR(plan.setDailyAverage)}</span></span>
+        <span>· Current avg <span className={`font-semibold ${t.accent}`}>{formatINR(plan.currentAverage)}</span></span>
+        <span>· {formatINR(plan.remainingBudget)} left / {plan.daysLeftInMonth}d</span>
+      </div>
+
+      <ul className="mt-3 space-y-1.5">
+        {rows.map((r) => (
+          <li key={r.slot} className="flex items-center justify-between rounded-lg bg-white/70 px-3 py-2 text-sm ring-1 ring-inset ring-gray-200/70">
+            <span className="min-w-0">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{r.slot}</span>
+              <span className="ml-2 font-medium text-gray-800">{r.meal.name}</span>
+            </span>
+            <span className="shrink-0 font-bold text-gray-700">~{formatINR(r.meal.price)}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-2 flex items-center justify-between text-xs">
+        <span className="text-gray-400">From your past routine orders, priced for today.</span>
+        <span className="font-bold text-gray-700">Day total ~{formatINR(plan.dayTotal)}</span>
+      </div>
     </div>
   );
 }
@@ -543,6 +654,7 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
   const [showManage, setShowManage] = useState(false);
   const [showBaseline, setShowBaseline] = useState(false);
   const [showCommunityBaseline, setShowCommunityBaseline] = useState(false);
+  const [mealPlanRefresh, setMealPlanRefresh] = useState(0);
 
   const load = useCallback(async () => {
     const data = await getNodeFeed(nodeId);
@@ -732,7 +844,12 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
       )}
 
       {/* Mess communities: per-meal Eatable / Leave voting for the current meal. */}
-      {node.nodeType === 'Mess' && <MessMealVoting nodeId={nodeId} />}
+      {node.nodeType === 'Mess' && (
+        <>
+          <MessMealVoting nodeId={nodeId} onVoted={() => setMealPlanRefresh((k) => k + 1)} />
+          <MealPlanSuggestion nodeId={nodeId} refreshKey={mealPlanRefresh} />
+        </>
+      )}
 
       {/* Verified flow banner for accountability communities */}
       {node.votingEnabled && (

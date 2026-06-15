@@ -87,3 +87,18 @@ export async function getMealPlan() {
     return null;
   }
 }
+
+/**
+ * Budget-tiered (low/mid/high) one-day meal plan, chosen by comparing the
+ * user's set daily average vs. their current average.
+ * @returns {Promise<object|null>}
+ */
+export async function getMealPlanTier() {
+  try {
+    const response = await apiClient.get("/pocket/meal-plan-tier");
+    return response.data?.data ?? null;
+  } catch (error) {
+    console.error("getMealPlanTier failed:", error);
+    return null;
+  }
+}
