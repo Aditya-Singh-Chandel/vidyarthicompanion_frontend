@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Upload, Loader2, Check, UtensilsCrossed, Sparkles, Users, User } from 'lucide-react';
+import { Upload, Loader2, Check, UtensilsCrossed, Sparkles, Users, User, Download } from 'lucide-react';
 import { parseDocument, saveMenu, savePersonalMenu, fileToDataUrl } from './profileApi';
+import { adoptNodeBaseline } from '@/features/communityEngine/communityApi';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const MEALS = ['breakfast', 'lunch', 'snacks', 'dinner'];
@@ -32,6 +33,7 @@ export default function MessSetup({ profile, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [message, setMessage] = useState('');
+  const [adopting, setAdopting] = useState(false);
 
   const aiEnabled = profile?.aiEnabled;
   const isPersonal = mode === 'personal';
@@ -59,6 +61,21 @@ export default function MessSetup({ profile, onSaved }) {
 
   const updateCell = (day, meal, value) =>
     setMenu((prev) => ({ ...prev, [day]: { ...prev[day], [meal]: value } }));
+
+  // Replace the user's PERSONAL menu with the selected community's official menu.
+  const handleAdoptCommunity = async () => {
+    if (!nodeId) return;
+    setAdopting(true);
+    setMessage('');
+    const res = await adoptNodeBaseline(nodeId);
+    setAdopting(false);
+    if (res) {
+      setMessage('Adopted the community menu as your personal menu.');
+      onSaved?.(res);
+    } else {
+      setMessage('Could not adopt — this community has no menu set yet.');
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -140,6 +157,15 @@ export default function MessSetup({ profile, onSaved }) {
               ))}
             </select>
           </label>
+          <button
+            type="button"
+            onClick={handleAdoptCommunity}
+            disabled={adopting || !nodeId}
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+          >
+            {adopting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+            Use as my personal menu
+          </button>
         </div>
       )}
 

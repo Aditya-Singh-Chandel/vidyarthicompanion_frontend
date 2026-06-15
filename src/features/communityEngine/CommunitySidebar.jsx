@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   Plus,
   Users,
@@ -9,6 +10,11 @@ import {
   Loader2,
   Check,
   KeyRound,
+  UtensilsCrossed,
+  GraduationCap,
+  HeartPulse,
+  Pin,
+  Settings2,
 } from 'lucide-react';
 import { NATURE_ORDER, natureOf } from './communityMeta';
 
@@ -55,6 +61,7 @@ function MyCommunityRow({ node, active, onSelect }) {
 
 export default function CommunitySidebar({
   myNodes,
+  primary,
   selectedNodeId,
   onSelect,
   onJoinByCode,
@@ -68,6 +75,17 @@ export default function CommunitySidebar({
     nature,
     nodes: myNodes.filter((n) => n.nature === nature),
   })).filter((g) => g.nodes.length > 0);
+
+  // The three fixed communities, resolved from the profile's primary selections.
+  const PINNED = [
+    { key: 'mess', label: 'Mess Community', Icon: UtensilsCrossed, accent: 'text-amber-600', soft: 'bg-amber-50' },
+    { key: 'class', label: 'Class Community', Icon: GraduationCap, accent: 'text-violet-600', soft: 'bg-violet-50' },
+    { key: 'empathy', label: 'Empathy Mesh', Icon: HeartPulse, accent: 'text-emerald-600', soft: 'bg-emerald-50' },
+  ].map((p) => {
+    const nodeId = primary?.[p.key] || null;
+    const node = nodeId ? myNodes.find((n) => n.nodeId === nodeId) || null : null;
+    return { ...p, nodeId, node };
+  });
 
   const handleCode = async (e) => {
     e.preventDefault();
@@ -91,6 +109,66 @@ export default function CommunitySidebar({
       >
         <Plus className="h-4 w-4" /> Create community
       </button>
+
+      {/* Fixed communities — pinned from your Profile selections. */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between px-1">
+          <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-gray-400">
+            <Pin className="h-3.5 w-3.5" /> Fixed communities
+          </h3>
+          <Link
+            href="/profile"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:underline"
+          >
+            <Settings2 className="h-3 w-3" /> Choose
+          </Link>
+        </div>
+        <div className="space-y-0.5">
+          {PINNED.map((p) => {
+            const Icon = p.Icon;
+            const active = p.node && p.node.nodeId === selectedNodeId;
+            if (p.node) {
+              return (
+                <button
+                  key={p.key}
+                  onClick={() => onSelect(p.node.nodeId)}
+                  className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
+                    active ? `${p.soft} ring-1 ring-inset ring-gray-200` : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${p.soft} ${p.accent}`}>
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-1.5">
+                      <span className={`truncate text-sm font-semibold ${active ? p.accent : 'text-gray-800'}`}>
+                        {p.label}
+                      </span>
+                      {p.node.isCr && <Crown className="h-3 w-3 shrink-0 text-amber-500" />}
+                    </span>
+                    <span className="block truncate text-[11px] text-gray-400">{p.node.name}</span>
+                  </span>
+                </button>
+              );
+            }
+            return (
+              <Link
+                key={p.key}
+                href="/profile"
+                className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all hover:bg-gray-50"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="truncate text-sm font-semibold text-gray-500">{p.label}</span>
+                  <span className="block truncate text-[11px] text-gray-400">Not set — choose in Profile</span>
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Your communities */}
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">

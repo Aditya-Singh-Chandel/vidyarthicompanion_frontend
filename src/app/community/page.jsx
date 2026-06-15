@@ -7,6 +7,7 @@ import CommunityPanel from '@/features/communityEngine/CommunityPanel';
 import CreateCommunityModal from '@/features/communityEngine/CreateCommunityModal';
 import SyncConflictModal from '@/features/communityEngine/SyncConflictModal';
 import { getMyNodes, joinByCode } from '@/features/communityEngine/communityApi';
+import { getProfile } from '@/features/profileEngine/profileApi';
 
 function EmptyState({ onCreate }) {
   return (
@@ -33,19 +34,30 @@ export default function CommunityPage() {
   const [myNodes, setMyNodes] = useState([]);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [adopted, setAdopted] = useState(null);
+  const [adoptable, setAdoptable] = useState(null);
+  // Profile-driven pins for the three fixed communities (Mess / Class / Empathy).
+  const [primary, setPrimary] = useState({ mess: null, class: null, empathy: null });
+
+  const loadPrimary = useCallback(async () => {
+    const profile = await getProfile();
+    setPrimary({
+      mess: profile?.primaryMessNodeId || null,
+      class: profile?.primaryClassNodeId || null,
+      empathy: profile?.primaryEmpathyNodeId || null,
+    });
+  }, []);
 
   const load = useCallback(async () => {
-    const mine = await getMyNodes();
+    const [mine] = await Promise.all([getMyNodes(), loadPrimary()]);
     setMyNodes(mine);
     setLoading(false);
     return mine;
-  }, []);
+  }, [loadPrimary]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const mine = await getMyNodes();
+      const [mine] = await Promise.all([getMyNodes(), loadPrimary()]);
       if (cancelled) return;
       setMyNodes(mine);
       setLoading(false);
@@ -54,7 +66,7 @@ export default function CommunityPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadPrimary]);
 
   const handleJoinByCode = async (code) => {
     const res = await joinByCode(code);
@@ -62,8 +74,9 @@ export default function CommunityPage() {
       const mine = await load();
       const joined = res.node?.nodeId || mine[mine.length - 1]?.nodeId;
       if (joined) setSelectedNodeId(joined);
-      // Class / Mess: the community baseline was adopted into the user's profile.
-      if (res.adopted) setAdopted(res.adopted);
+      // Class / Mess: the community's timetable/menu differs from the user's.
+      // Ask whether to adopt it (only when there's an actual mismatch).
+      if (res.adoptable?.changed) setAdoptable(res.adoptable);
     }
     return res;
   };
@@ -95,6 +108,7 @@ export default function CommunityPage() {
         <div className="flex flex-col gap-6 lg:flex-row">
           <CommunitySidebar
             myNodes={myNodes}
+            primary={primary}
             selectedNodeId={selectedNodeId}
             onSelect={setSelectedNodeId}
             onJoinByCode={handleJoinByCode}
@@ -121,8 +135,15 @@ export default function CommunityPage() {
         <CreateCommunityModal onClose={() => setShowCreate(false)} onCreated={handleCreated} />
       )}
 
-      {adopted && (
-        <SyncConflictModal adopted={adopted} onResolved={() => setAdopted(null)} />
+      {adoptable && (
+        <SyncConflictModal
+          adoptable={adoptable}
+          onResolved={async (outcome) => {
+            setAdoptable(null);
+            // Adoption changed the user's personal baseline; refresh pins/menus.
+            if (outcome === 'adopted') await load();
+          }}
+        />
       )}
     </div>
   );

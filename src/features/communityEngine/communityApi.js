@@ -100,14 +100,43 @@ export async function joinByCode(code) {
     return {
       status: "joined",
       node: response.data?.data,
-      // On join, the community baseline (class timetable / mess menu) is adopted
-      // into the user's personal profile; this describes what was applied.
-      adopted: response.data?.adopted ?? null,
+      // The community's class timetable / mess menu that COULD be adopted into
+      // the user's personal profile. Includes a `changed` flag (mismatch); the
+      // UI asks the user before applying it via adoptNodeBaseline().
+      adoptable: response.data?.adoptable ?? null,
       message: response.data?.message,
     };
   } catch (error) {
     console.error("joinByCode failed:", error);
     return { status: "error", message: error?.response?.data?.message || "Invalid invite code." };
+  }
+}
+
+/**
+ * A community's current official timetable (Academic) or menu (Mess).
+ * @returns {Promise<{kind:string, nodeName:string, schedule:Array, menu:object}|null>}
+ */
+export async function getNodeBaseline(nodeId) {
+  try {
+    const response = await apiClient.get(`/community/nodes/${nodeId}/baseline`);
+    return response.data?.data ?? null;
+  } catch (error) {
+    console.error("getNodeBaseline failed:", error);
+    return null;
+  }
+}
+
+/**
+ * Adopt a community's timetable/menu into the user's personal profile,
+ * replacing the previous version. @returns {Promise<object|null>} adopted descriptor
+ */
+export async function adoptNodeBaseline(nodeId) {
+  try {
+    const response = await apiClient.post(`/community/nodes/${nodeId}/adopt-baseline`);
+    return response.data?.data ?? null;
+  } catch (error) {
+    console.error("adoptNodeBaseline failed:", error);
+    return null;
   }
 }
 

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Upload, Loader2, Plus, Trash2, Check, CalendarRange, Sparkles, GraduationCap, Users } from 'lucide-react';
+import { Upload, Loader2, Plus, Trash2, Check, CalendarRange, Sparkles, GraduationCap, Users, Download } from 'lucide-react';
 import { parseDocument, saveSchedule, fileToDataUrl, updateFinancial } from './profileApi';
+import { adoptNodeBaseline } from '@/features/communityEngine/communityApi';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -23,15 +24,33 @@ export default function AcademicSetup({ profile, onSaved }) {
   const classCommunities = profile?.classCommunities ?? [];
   const [classNodeId, setClassNodeId] = useState(profile?.primaryClassNodeId ?? '');
   const [connecting, setConnecting] = useState(false);
+  const [adopting, setAdopting] = useState(false);
+  const [adoptMsg, setAdoptMsg] = useState('');
 
   const aiEnabled = profile?.aiEnabled;
 
   const handleConnectClass = async (nodeId) => {
     setClassNodeId(nodeId);
+    setAdoptMsg('');
     setConnecting(true);
     await updateFinancial({ primaryClassNodeId: nodeId || null });
     setConnecting(false);
     onSaved?.();
+  };
+
+  // Replace the user's personal timetable with the connected community's official one.
+  const handleAdoptTimetable = async () => {
+    if (!classNodeId) return;
+    setAdopting(true);
+    setAdoptMsg('');
+    const res = await adoptNodeBaseline(classNodeId);
+    setAdopting(false);
+    if (res) {
+      setAdoptMsg('Adopted the community timetable into your profile.');
+      onSaved?.();
+    } else {
+      setAdoptMsg('Could not adopt — this community has no timetable set yet.');
+    }
   };
 
   const handleFile = async (file) => {
@@ -100,6 +119,18 @@ export default function AcademicSetup({ profile, onSaved }) {
           </select>
           {connecting && <Loader2 className="h-4 w-4 animate-spin text-violet-600" />}
         </div>
+        {classNodeId && (
+          <button
+            type="button"
+            onClick={handleAdoptTimetable}
+            disabled={adopting}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-white px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50 disabled:opacity-50"
+          >
+            {adopting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+            Use this community&apos;s timetable
+          </button>
+        )}
+        {adoptMsg && <p className="mt-1.5 text-[11px] font-medium text-violet-700">{adoptMsg}</p>}
         {classCommunities.length === 0 && (
           <p className="mt-1.5 flex items-center gap-1 text-[11px] text-violet-700/70">
             <Users className="h-3 w-3" /> Join a Class community with an invite code to connect one.

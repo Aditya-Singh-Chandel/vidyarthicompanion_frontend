@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GitMerge, Loader2, Check, Undo2, CalendarRange, UtensilsCrossed } from 'lucide-react';
-import { saveSchedule, savePersonalMenu } from '@/features/profileEngine/profileApi';
+import { GitMerge, Loader2, Check, ShieldCheck, CalendarRange, UtensilsCrossed } from 'lucide-react';
+import { adoptNodeBaseline } from './communityApi';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -56,33 +56,30 @@ function MenuPreview({ menu = {} }) {
 }
 
 /**
- * Adoption showcase shown after joining a Class or Mess community. The backend
- * has ALREADY overridden the member's personal timetable / menu with the
- * community's baseline; this modal showcases what was applied and offers an
- * undo back to the member's previous version (Keep Own).
+ * Shown after joining a Class or Mess community whose official timetable / menu
+ * DIFFERS from the member's own. The join is already done, but the member's
+ * personal profile is left untouched until they decide here:
+ *  - "Use the community's …"  -> adopt (override personal with community's)
+ *  - "Keep my own …"          -> dismiss, personal profile stays as-is
  */
-export default function SyncConflictModal({ adopted, onResolved }) {
+export default function SyncConflictModal({ adoptable, onResolved }) {
   const [busy, setBusy] = useState(false);
-  const isClass = adopted.kind === 'class';
+  const isClass = adoptable.kind === 'class';
   const Icon = isClass ? CalendarRange : UtensilsCrossed;
   const label = isClass ? 'timetable' : 'mess menu';
-  const adoptedData = isClass ? adopted.communitySchedule : adopted.communityMenu;
-  const previousData = isClass ? adopted.previousSchedule : adopted.previousMenu;
+  const communityData = isClass ? adoptable.communitySchedule : adoptable.communityMenu;
+  const previousData = isClass ? adoptable.previousSchedule : adoptable.previousMenu;
   const hadPrevious = Array.isArray(previousData)
     ? previousData.length > 0
     : previousData && Object.keys(previousData).length > 0;
 
-  const handleKeep = () => onResolved?.('synced');
+  const handleKeepOwn = () => onResolved?.('kept');
 
-  const handleUndo = async () => {
+  const handleAdopt = async () => {
     setBusy(true);
-    if (isClass) {
-      await saveSchedule(previousData || []);
-    } else {
-      await savePersonalMenu(previousData || {});
-    }
+    await adoptNodeBaseline(adoptable.nodeId);
     setBusy(false);
-    onResolved?.('reverted');
+    onResolved?.('adopted');
   };
 
   return (
@@ -94,11 +91,13 @@ export default function SyncConflictModal({ adopted, onResolved }) {
             <GitMerge className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Your {label} now matches the community</h2>
+            <h2 className="text-lg font-bold text-gray-900">
+              This community&apos;s {label} differs from yours
+            </h2>
             <p className="mt-0.5 text-sm text-gray-500">
-              You joined <span className="font-semibold text-gray-700">{adopted.nodeName}</span>. Its{' '}
-              {label} has been applied to your profile
-              {hadPrevious ? ', replacing your previous version.' : '.'}
+              You joined <span className="font-semibold text-gray-700">{adoptable.nodeName}</span>. Use its
+              official {label}, or keep
+              {hadPrevious ? ' your own.' : ' an empty profile for now.'}
             </p>
           </div>
         </div>
@@ -106,30 +105,27 @@ export default function SyncConflictModal({ adopted, onResolved }) {
         <div className="max-h-[50vh] overflow-y-auto px-6 py-5">
           <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4">
             <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-indigo-700">
-              <Icon className="h-3.5 w-3.5" /> Adopted {label} · {adopted.nodeName}
+              <Icon className="h-3.5 w-3.5" /> Community {label} · {adoptable.nodeName}
             </p>
-            {isClass ? <SchedulePreview slots={adoptedData} /> : <MenuPreview menu={adoptedData} />}
+            {isClass ? <SchedulePreview slots={communityData} /> : <MenuPreview menu={communityData} />}
           </div>
         </div>
 
         <div className="flex flex-col gap-2 border-t border-gray-100 px-6 py-4 sm:flex-row sm:justify-end">
-          {hadPrevious && (
-            <button
-              onClick={handleUndo}
-              disabled={busy}
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-            >
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Undo2 className="h-4 w-4" />}
-              Keep my previous {label}
-            </button>
-          )}
           <button
-            onClick={handleKeep}
+            onClick={handleKeepOwn}
+            disabled={busy}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Keep my own {label}
+          </button>
+          <button
+            onClick={handleAdopt}
             disabled={busy}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60"
           >
-            <Check className="h-4 w-4" />
-            Keep the community {label}
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+            Use the community {label}
           </button>
         </div>
       </div>

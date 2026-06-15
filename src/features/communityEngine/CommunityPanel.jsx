@@ -24,6 +24,7 @@ import {
   Pencil,
   Plus,
   Trash2,
+  BookOpen,
 } from 'lucide-react';
 import { natureOf, statusOf } from './communityMeta';
 import {
@@ -36,6 +37,7 @@ import {
   getMessVotes,
   castMessVote,
   updateBaseline,
+  getNodeBaseline,
 } from './communityApi';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -435,6 +437,103 @@ function BaselineEditor({ node, onSaved }) {
   );
 }
 
+/** Read-only weekly view of a community's current menu (Mess) or timetable (Academic), for any member. */
+function BaselineViewer({ nodeId, kind }) {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const d = await getNodeBaseline(nodeId);
+      if (cancelled) return;
+      setData(d);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [nodeId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-400 shadow-sm">
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading community {kind === 'Mess' ? 'menu' : 'timetable'}…
+      </div>
+    );
+  }
+
+  if (kind === 'Mess') {
+    const menu = data?.menu || {};
+    const rows = DAYS.filter((d) => menu[d]).map((d) => ({ day: d, meals: menu[d] }));
+    return (
+      <div className="rounded-xl border border-amber-200 bg-white p-4 shadow-sm">
+        <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-amber-700">
+          <UtensilsCrossed className="h-3.5 w-3.5" /> Official community menu
+        </p>
+        {rows.length === 0 ? (
+          <p className="text-xs text-gray-400">No menu has been set for this community yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-xs">
+              <thead>
+                <tr className="text-left text-gray-400">
+                  <th className="p-2 font-semibold uppercase tracking-wide">Day</th>
+                  {['breakfast', 'lunch', 'snacks', 'dinner'].map((m) => (
+                    <th key={m} className="p-2 font-semibold capitalize">{m}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(({ day, meals }) => (
+                  <tr key={day} className="border-t border-gray-100">
+                    <td className="p-2 font-semibold text-gray-700">{day.slice(0, 3)}</td>
+                    {['breakfast', 'lunch', 'snacks', 'dinner'].map((m) => (
+                      <td key={m} className="p-2 text-gray-700">{meals[m] || '—'}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const slots = data?.schedule || [];
+  const grouped = DAYS.map((d) => ({ day: d, items: slots.filter((s) => s.day === d) })).filter((g) => g.items.length);
+  return (
+    <div className="rounded-xl border border-violet-200 bg-white p-4 shadow-sm">
+      <p className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-violet-700">
+        <CalendarClock className="h-3.5 w-3.5" /> Official community timetable
+      </p>
+      {grouped.length === 0 ? (
+        <p className="text-xs text-gray-400">No timetable has been set for this community yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {grouped.map((g) => (
+            <div key={g.day}>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">{g.day}</p>
+              <ul className="mt-0.5 space-y-0.5">
+                {g.items.map((s, i) => (
+                  <li key={i} className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-gray-800">{s.subject}</span>
+                    <span className="text-gray-500">
+                      {s.timeStart || '—'}
+                      {s.timeEnd ? `–${s.timeEnd}` : ''} {s.room ? `· ${s.room}` : ''}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CommunityPanel({ nodeId, onMembershipChange }) {
   const [loading, setLoading] = useState(true);
   const [node, setNode] = useState(null);
@@ -443,6 +542,7 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
   const [copied, setCopied] = useState(false);
   const [showManage, setShowManage] = useState(false);
   const [showBaseline, setShowBaseline] = useState(false);
+  const [showCommunityBaseline, setShowCommunityBaseline] = useState(false);
 
   const load = useCallback(async () => {
     const data = await getNodeFeed(nodeId);
@@ -597,7 +697,25 @@ export default function CommunityPanel({ nodeId, onMembershipChange }) {
             )}
           </div>
         )}
+
+        {/* Member-visible: view the community's official menu / timetable. */}
+        {(node.nodeType === 'Mess' || node.nodeType === 'Academic') && (
+          <div className="flex flex-wrap items-center gap-3 border-t border-gray-100 px-5 py-3">
+            <button
+              onClick={() => setShowCommunityBaseline((s) => !s)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              {showCommunityBaseline ? 'Hide' : 'View'}{' '}
+              {node.nodeType === 'Mess' ? 'community menu' : 'community timetable'}
+            </button>
+          </div>
+        )}
       </div>
+
+      {showCommunityBaseline && (node.nodeType === 'Mess' || node.nodeType === 'Academic') && (
+        <BaselineViewer nodeId={nodeId} kind={node.nodeType} />
+      )}
 
       {showManage && node.isAdmin && (
         <ManagePanel
