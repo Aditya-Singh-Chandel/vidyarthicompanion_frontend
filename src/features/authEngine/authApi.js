@@ -2,12 +2,13 @@ import apiClient, { setToken, clearToken } from "@/lib/apiClient";
 
 /**
  * Register a new account. On success the JWT is stored and the user returned.
+ * Everyone signs up as a student.
  * @returns {Promise<{user: object}>}
  * @throws {Error} with a user-friendly message on failure.
  */
-export async function register({ name, username, email, password, role }) {
+export async function register({ name, username, email, password }) {
   try {
-    const res = await apiClient.post("/auth/register", { name, username, email, password, role });
+    const res = await apiClient.post("/auth/register", { name, username, email, password });
     const { token, user } = res.data.data;
     setToken(token);
     return { user };

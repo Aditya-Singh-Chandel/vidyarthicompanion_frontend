@@ -14,7 +14,6 @@ export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('student');
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -23,7 +22,7 @@ export default function RegisterPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await register({ name, username, email, password, role });
+      await register({ name, username, email, password });
       router.replace('/dashboard');
     } catch (err) {
       setError(err.message);
@@ -113,21 +112,6 @@ export default function RegisterPage() {
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 placeholder="At least 6 characters"
               />
-            </div>
-
-            <div>
-              <label htmlFor="role" className="mb-1 block text-sm font-medium text-gray-700">
-                Role
-              </label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              >
-                <option value="student">Student</option>
-                <option value="cr">Class Representative (CR)</option>
-              </select>
             </div>
 
             <button

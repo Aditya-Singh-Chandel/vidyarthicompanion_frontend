@@ -100,7 +100,6 @@ function PlanCard({ card, onRespond, busy }) {
             <span className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusBadge.cls}`}>
               <statusBadge.Icon className="h-3 w-3" />
               {statusBadge.label}
-              {typeof card.consensusScore === 'number' ? ` · consensus ${card.consensusScore}` : ''}
             </span>
           )}
 
