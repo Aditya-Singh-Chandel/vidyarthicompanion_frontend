@@ -11,9 +11,14 @@ const PUBLIC_ROUTES = ['/login', '/register'];
 function FullScreenLoader() {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-gray-50">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
-        <p className="text-sm font-medium text-gray-500">Loading CampusFlow…</p>
+      <div className="flex flex-col items-center gap-4">
+        <div className="relative h-12 w-12">
+          <div className="absolute inset-0 animate-spin rounded-full border-2 border-indigo-100 border-t-indigo-600" />
+          <div className="absolute inset-2 rounded-full bg-indigo-600/10 cf-float" />
+        </div>
+        <p className="font-display text-base font-medium tracking-tight text-gray-600">
+          Loading CampusFlow&hellip;
+        </p>
       </div>
     </div>
   );
@@ -53,7 +58,7 @@ export default function AppShell({ children }) {
   return (
     <>
       <Navigation />
-      <main className="flex-1 overflow-y-auto relative">{children}</main>
+      <main key={pathname} className="cf-page-enter relative flex-1 overflow-y-auto">{children}</main>
     </>
   );
 }
