@@ -127,6 +127,32 @@ End-to-end working web app (Next.js frontend + Express/MongoDB backend + Gemini 
 - PocketBuddy wallet ingest + tagging + recommendations
 - Wellness tracker, empathy/safe-skip, presence + transit departure alerts
 
+## Landing Page
+<img width="1600" height="726" alt="WhatsApp Image 2026-06-15 at 23 03 31" src="https://github.com/user-attachments/assets/4c8a57ba-75de-4107-a554-1dd258093f8a" />
+
+Dashboard Window of the user 
+- Today's Plan Tracker which reports all the notifications of user and the community.
+<img width="1600" height="730" alt="WhatsApp Image 2026-06-15 at 23 03 31 (1)" src="https://github.com/user-attachments/assets/a7b647b0-0960-4acb-9f78-3b5325ba3287" />
+- Override Engine Feature which takes input as image or text.
+<img width="1600" height="727" alt="WhatsApp Image 2026-06-15 at 23 03 31 (2)" src="https://github.com/user-attachments/assets/5569f3cb-cc8b-4092-be8f-5394806e9173" />
+- Burnout and Wellbeing Tracker when the score becomes alarming all the members of the Empathy mesh are intimated
+<img width="1600" height="730" alt="WhatsApp Image 2026-06-15 at 23 03 30" src="https://github.com/user-attachments/assets/870a88fa-8ea9-4c57-b778-edb18968e1d3" />
+- Calendar to browse date and its events.
+<img width="1600" height="730" alt="WhatsApp Image 2026-06-15 at 23 03 30 (1)" src="https://github.com/user-attachments/assets/075ca086-4f7a-4b6e-8ea6-926f82d49db2" />
+-Community Page
+<img width="1600" height="721" alt="WhatsApp Image 2026-06-15 at 23 03 29" src="https://github.com/user-attachments/assets/73e5d870-70e9-4432-b866-d8382975068d" />
+
+## Pocket Buddy Window
+- Captue payment through image or text of bill
+<img width="1600" height="724" alt="WhatsApp Image 2026-06-15 at 23 03 29 (1)" src="https://github.com/user-attachments/assets/797ec984-b2cc-4c88-a41d-1acb1a832f05" />
+- Transaction history
+<img width="1600" height="724" alt="WhatsApp Image 2026-06-15 at 23 03 29 (2)" src="https://github.com/user-attachments/assets/ce5f67a1-3a0c-4a20-abdb-adde4aad833a" />
+
+## Profile Page
+<img width="1600" height="724" alt="WhatsApp Image 2026-06-15 at 23 03 28" src="https://github.com/user-attachments/assets/efbdfd75-53f6-4922-aef0-a6eaf693e212" />
+<img width="1600" height="726" alt="WhatsApp Image 2026-06-15 at 23 03 27" src="https://github.com/user-attachments/assets/8e86c4cd-1d4b-4365-82aa-3311dbab3aa7" />
+<img width="1600" height="726" alt="WhatsApp Image 2026-06-15 at 23 03 27 (1)" src="https://github.com/user-attachments/assets/cc9c1baa-71a8-4c91-b638-928f78ae4b97" />
+
 **Demo:** *[Video / Deployed URL]*
 
 ---
@@ -220,4 +246,4 @@ Targeting **250M+ students globally**. Per student: fewer missed deadlines, **10
 
 ---
 
-**Links:** GitHub *[URL]*  |  Demo Video *[URL]*  |  Live App *[URL]*
+**Links:** GitHub *[(https://github.com/timey07/VidyarthiCompanion)]*  |  Demo Video *[URL]*  |  Live App *[URL]*
