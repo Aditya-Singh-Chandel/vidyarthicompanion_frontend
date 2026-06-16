@@ -61,6 +61,7 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGreeting(getGreeting());
     setMounted(true);
     const interval = setInterval(() => setGreeting(getGreeting()), 60000);
