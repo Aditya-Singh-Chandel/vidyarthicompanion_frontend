@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Settings, Mail } from 'lucide-react';
+import { Menu, Settings, Mail, X } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
 import Button from '@/components/ui/Button';
 import { useOverlay } from '@/components/overlays/OverlayContext';
@@ -44,7 +44,7 @@ export default function PublicNav() {
                 href={href}
                 className={`rounded-[var(--radius-pill)] px-4 py-2 text-sm font-medium transition-all duration-300 ${
                   active
-                    ? 'bg-[var(--teal)] text-white shadow-[var(--shadow-glow-teal)]'
+                    ? 'bg-[var(--brand)] text-white shadow-[var(--shadow-glow-brand)]'
                     : 'text-[var(--text-secondary)] hover:bg-[var(--cloud)] hover:text-[var(--text-primary)]'
                 }`}
               >
@@ -58,7 +58,7 @@ export default function PublicNav() {
           <button
             type="button"
             onClick={() => openPanel('contact')}
-            className="rounded-[var(--radius-lg)] p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--cloud)] hover:text-[var(--teal)]"
+            className="rounded-[var(--radius-lg)] p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--cloud)] hover:text-[var(--brand)]"
             aria-label="Contact"
           >
             <Mail className="h-5 w-5" />
@@ -66,7 +66,7 @@ export default function PublicNav() {
           <button
             type="button"
             onClick={() => openPanel('settings')}
-            className="rounded-[var(--radius-lg)] p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--cloud)] hover:text-[var(--teal)]"
+            className="rounded-[var(--radius-lg)] p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--cloud)] hover:text-[var(--brand)]"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
@@ -84,7 +84,7 @@ export default function PublicNav() {
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Menu"
         >
-          <Menu className="h-5 w-5" />
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 

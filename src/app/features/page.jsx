@@ -98,24 +98,27 @@ const FEATURES = [
     badge: 'Live',
     span: 'normal',
     accent: 'saffron',
-    details: 'Live clock syncs with backend horizon filtering. Budget-critical days get saffron urgency badges.',
+    details: 'Live clock syncs with backend horizon filtering. Budget-critical days get urgency badges.',
   },
 ];
 
 export default function FeaturesPage() {
   return (
     <MarketingLayout>
-      <section className="relative px-4 pt-28 pb-12 sm:px-6">
-        <div className="orb orb-teal right-[5%] top-20 h-48 w-48 opacity-20" />
+      <section className="relative px-4 pt-28 pb-12 sm:px-6 overflow-hidden">
+        {/* Aurora orbs */}
+        <div className="orb orb-brand right-[5%] top-20 h-48 w-48 opacity-15" />
+        <div className="orb orb-purple left-[10%] top-32 h-32 w-32 opacity-10" />
+
         <div className="mx-auto max-w-6xl">
           <ScrollReveal>
-            <Badge variant="teal">Features</Badge>
+            <Badge variant="aurora">Features</Badge>
             <h1 className="text-display mt-4 max-w-3xl text-[var(--text-primary)]">
               Asymmetric grid,
-              <span className="text-[var(--teal)]"> dynamic depth</span>
+              <span className="cf-gradient-text"> dynamic depth</span>
             </h1>
             <p className="mt-4 max-w-2xl text-base text-[var(--text-secondary)]">
-              Hover to lift cards. Click Explore to expand inline — no page reload. Every component reuses the Midnight Monsoon design system.
+              Hover to lift cards. Click Explore to expand inline — no page reload. Every component reuses the Aurora design system.
             </p>
           </ScrollReveal>
         </div>

@@ -13,7 +13,10 @@ export async function register({ name, username, email, password }) {
     setToken(token);
     return { user };
   } catch (error) {
-    throw new Error(error?.response?.data?.message || "Registration failed. Please try again.");
+    if (!error.response) {
+      throw new Error(`Network Error: Ensure backend is running. Details: ${error.message}`);
+    }
+    throw new Error(error.response?.data?.message || "Registration failed. Please try again.");
   }
 }
 
@@ -28,7 +31,10 @@ export async function login({ email, password }) {
     setToken(token);
     return { user };
   } catch (error) {
-    throw new Error(error?.response?.data?.message || "Invalid email or password.");
+    if (!error.response) {
+      throw new Error(`Network Error: Ensure backend is running. Details: ${error.message}`);
+    }
+    throw new Error(error.response?.data?.message || "Invalid email or password.");
   }
 }
 

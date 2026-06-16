@@ -5,15 +5,15 @@ import { Loader2 } from 'lucide-react';
 
 const VARIANTS = {
   primary:
-    'bg-[var(--teal)] text-white hover:bg-[var(--teal-bright)] shadow-[var(--shadow-glow-teal)] focus-visible:ring-[var(--teal)]',
+    'bg-gradient-to-r from-[var(--brand)] to-[var(--brand-dark)] text-white hover:from-[var(--brand-light)] hover:to-[var(--brand)] shadow-[0_10px_30px_-8px_rgba(109,94,252,0.6)] hover:shadow-[0_16px_40px_-8px_rgba(109,94,252,0.8)] focus-visible:ring-[var(--brand)]',
   secondary:
     'bg-[var(--ink-soft)] text-[var(--text-on-dark)] hover:bg-[var(--ink-muted)] focus-visible:ring-[var(--ink-soft)]',
   accent:
-    'bg-[var(--saffron)] text-[var(--ink)] hover:bg-[var(--saffron-bright)] shadow-[var(--shadow-glow-saffron)] focus-visible:ring-[var(--saffron)]',
+    'bg-gradient-to-r from-[var(--brand-2)] to-[var(--brand-4)] text-white hover:from-[var(--brand-4)] hover:to-[var(--brand-2)] shadow-[0_10px_30px_-8px_rgba(155,92,255,0.5)] focus-visible:ring-[var(--brand-2)]',
   ghost:
-    'bg-transparent text-[var(--text-primary)] hover:bg-[var(--cloud)] focus-visible:ring-[var(--teal)]',
+    'bg-transparent text-[var(--text-primary)] hover:bg-[var(--cloud)] focus-visible:ring-[var(--brand)]',
   outline:
-    'bg-transparent border-2 border-[var(--teal)] text-[var(--teal)] hover:bg-[var(--teal)] hover:text-white focus-visible:ring-[var(--teal)]',
+    'bg-transparent border-2 border-[var(--brand)] text-[var(--brand)] hover:bg-[var(--brand)] hover:text-white focus-visible:ring-[var(--brand)]',
   danger:
     'bg-[var(--danger)] text-white hover:opacity-90 focus-visible:ring-[var(--danger)]',
 };

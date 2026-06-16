@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Users2, ArrowRight, Loader2 } from 'lucide-react';
+import { Users2, ArrowRight, Loader2, Sparkles } from 'lucide-react';
 import CommunitySidebar from '@/features/communityEngine/CommunitySidebar';
 import CommunityPanel from '@/features/communityEngine/CommunityPanel';
 import CreateCommunityModal from '@/features/communityEngine/CreateCommunityModal';
@@ -11,17 +11,17 @@ import { getProfile } from '@/features/profileEngine/profileApi';
 
 function EmptyState({ onCreate }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center shadow-sm">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50">
-        <Users2 className="h-7 w-7 text-indigo-500" />
+    <div className="flex flex-1 flex-col items-center justify-center rounded-[var(--radius-2xl)] border border-dashed border-[var(--brand)]/20 bg-white/50 py-20 text-center backdrop-blur-md">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand)]/15 to-[var(--brand-2)]/15 shadow-[var(--shadow-glow-brand)]">
+        <Users2 className="h-8 w-8 text-[var(--brand)]" />
       </div>
-      <p className="mt-4 text-base font-semibold text-gray-900">Pick a community to open its feed</p>
-      <p className="mt-1 max-w-sm text-sm text-gray-500">
+      <p className="mt-5 text-base font-bold text-gray-900">Pick a community to open its feed</p>
+      <p className="mt-1.5 max-w-sm text-sm text-[var(--text-secondary)]">
         Each community keeps its own column of updates. Join one from the sidebar, or start your own.
       </p>
       <button
         onClick={onCreate}
-        className="mt-5 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[var(--brand)] to-[var(--brand-dark)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(109,94,252,0.6)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_36px_-8px_rgba(109,94,252,0.8)]"
       >
         Create a community <ArrowRight className="h-4 w-4" />
       </button>
@@ -35,10 +35,7 @@ export default function CommunityPage() {
   const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [adoptable, setAdoptable] = useState(null);
-  // Deep link (e.g. from a dashboard burnout card): ?node=…&member=… opens that
-  // member's Meet Up inside the named community.
   const [deepLink, setDeepLink] = useState({ node: null, member: null });
-  // Profile-driven pins for the three fixed communities (Mess / Class / Empathy).
   const [primary, setPrimary] = useState({ mess: null, class: null, empathy: null });
 
   const loadPrimary = useCallback(async () => {
@@ -65,10 +62,6 @@ export default function CommunityPage() {
       setMyNodes(mine);
       setLoading(false);
 
-      // Deep link (?node=…&member=…) — read client-side here (inside the async
-      // callback) to avoid both the useSearchParams prerender bailout and a
-      // synchronous setState in the effect body. Drives node selection + the
-      // Meet Up auto-open passed down to CommunityPanel.
       let dl = { node: null, member: null };
       if (typeof window !== 'undefined') {
         const params = new URLSearchParams(window.location.search);
@@ -89,8 +82,6 @@ export default function CommunityPage() {
       const mine = await load();
       const joined = res.node?.nodeId || mine[mine.length - 1]?.nodeId;
       if (joined) setSelectedNodeId(joined);
-      // Class / Mess: the community's timetable/menu differs from the user's.
-      // Ask whether to adopt it (only when there's an actual mismatch).
       if (res.adoptable?.changed) setAdoptable(res.adoptable);
     }
     return res;
@@ -102,7 +93,6 @@ export default function CommunityPage() {
     if (node?.nodeId) setSelectedNodeId(node.nodeId);
   };
 
-  // Called after posting/leaving/approving to keep sidebar counts fresh.
   const handleMembershipChange = async (left = false) => {
     const mine = await load();
     if (left) {
@@ -111,14 +101,22 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+    <div className="min-h-screen p-4 sm:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-gray-900">Communities</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Every community is private and invite-only. Verified updates flow to your dashboard and master calendar.
+        <header className="cf-page-enter">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand)]/15 to-[var(--brand-2)]/15">
+              <Users2 className="h-5 w-5 text-[var(--brand)]" />
+            </div>
+            <h1 className="text-2xl font-black tracking-tight text-gray-900">Communities</h1>
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-[var(--brand)] bg-[var(--brand)]/8 px-2.5 py-1 rounded-full border border-[var(--brand)]/15">
+              <Sparkles className="h-3 w-3" /> Trust-Weighted
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            Private, invite-only communities. Verified updates flow to your dashboard and master calendar.
           </p>
-        </div>
+        </header>
 
         <div className="flex flex-col gap-6 lg:flex-row">
           <CommunitySidebar
@@ -131,8 +129,8 @@ export default function CommunityPage() {
           />
 
           {loading ? (
-            <div className="flex flex-1 items-center justify-center rounded-2xl border border-gray-200 bg-white py-24 text-sm text-gray-400 shadow-sm">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading your communities…
+            <div className="flex flex-1 items-center justify-center rounded-[var(--radius-2xl)] border border-white/60 bg-white/50 py-24 text-sm text-gray-400 backdrop-blur-md shadow-[var(--shadow-float)]">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin text-[var(--brand)]" /> Loading your communities…
             </div>
           ) : selectedNodeId ? (
             <CommunityPanel
@@ -156,7 +154,6 @@ export default function CommunityPage() {
           adoptable={adoptable}
           onResolved={async (outcome) => {
             setAdoptable(null);
-            // Adoption changed the user's personal baseline; refresh pins/menus.
             if (outcome === 'adopted') await load();
           }}
         />

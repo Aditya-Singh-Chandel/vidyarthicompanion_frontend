@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Wallet, TrendingUp, Sparkles, Zap } from 'lucide-react';
 import WalletOverview from '@/features/pocketBuddy/WalletOverview';
 import RecommendationCard from '@/features/pocketBuddy/RecommendationCard';
 import SpendingBreakdown from '@/features/pocketBuddy/SpendingBreakdown';
@@ -27,7 +27,6 @@ export default function WalletPage() {
     const [s, t] = await Promise.all([getWalletSummary(), getTransactions({ limit: 40 })]);
     setSummary(s);
     setTransactions(t);
-    // Recommendation depends on fresh balances/consensus; fetch alongside.
     getRecommendation().then((r) => {
       setRecommendation(r);
       setRecLoading(false);
@@ -70,23 +69,32 @@ export default function WalletPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+    <div className="min-h-screen p-4 sm:p-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">PocketBuddy</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Passive transaction tracking, crowdsourced merchant tags, and wallet-vs-wellness nudges.
+        <header className="mb-6 cf-page-enter">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand-3)]/15 to-[var(--brand)]/15">
+              <Wallet className="h-5 w-5 text-[var(--brand-3)]" />
+            </div>
+            <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">PocketBuddy</h1>
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-[var(--brand-3)] bg-[var(--brand-3)]/8 px-2.5 py-1 rounded-full border border-[var(--brand-3)]/15">
+              <TrendingUp className="h-3 w-3" /> Smart Budgets
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            Transaction tracking, AI-powered spending insights, and wallet-vs-wellness nudges.
           </p>
-        </div>
+        </header>
 
         {loading ? (
-          <div className="flex items-center justify-center rounded-2xl border border-gray-200 bg-white py-24 text-sm text-gray-400 shadow-sm">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Syncing your wallet…
+          <div className="flex items-center justify-center rounded-[var(--radius-2xl)] border border-white/60 bg-white/50 py-24 text-sm text-gray-400 backdrop-blur-md shadow-[var(--shadow-float)]">
+            <Loader2 className="mr-2 h-5 w-5 animate-spin text-[var(--brand)]" /> Syncing your wallet…
           </div>
         ) : (
           <>
             {lastAlert && (
-              <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+              <div className="mb-6 rounded-xl border border-amber-200/60 bg-amber-50/60 px-4 py-3 text-sm font-medium text-amber-800 backdrop-blur-md animate-slide-up-fade">
+                <Zap className="inline h-4 w-4 mr-1.5 text-amber-600" />
                 {lastAlert}
               </div>
             )}
@@ -94,18 +102,32 @@ export default function WalletPage() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
               {/* Left column */}
               <div className="space-y-6 lg:col-span-3">
-                <WalletOverview summary={summary} />
-                <RecommendationCard rec={recommendation} loading={recLoading} />
-                <TransactionFeed transactions={transactions} onTag={handleTag} />
+                <div className="widget-card p-5">
+                  <WalletOverview summary={summary} />
+                </div>
+                <div className="widget-card p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="h-4 w-4 text-[var(--brand)]" />
+                    <span className="section-label">AI Recommendation</span>
+                  </div>
+                  <RecommendationCard rec={recommendation} loading={recLoading} />
+                </div>
+                <div className="widget-card p-5">
+                  <TransactionFeed transactions={transactions} onTag={handleTag} />
+                </div>
               </div>
 
               {/* Right column */}
               <div className="space-y-6 lg:col-span-2">
-                <CaptureTransaction onCapture={handleCapture} />
-                <SpendingBreakdown
-                  breakdown={summary?.categoryBreakdown || []}
-                  spentThisMonth={summary?.spentThisMonth || 0}
-                />
+                <div className="widget-card p-5">
+                  <CaptureTransaction onCapture={handleCapture} />
+                </div>
+                <div className="widget-card p-5">
+                  <SpendingBreakdown
+                    breakdown={summary?.categoryBreakdown || []}
+                    spentThisMonth={summary?.spentThisMonth || 0}
+                  />
+                </div>
               </div>
             </div>
           </>
