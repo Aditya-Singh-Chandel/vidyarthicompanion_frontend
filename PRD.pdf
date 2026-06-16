@@ -1,0 +1,18 @@
+%PDF-1.4
+1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
+2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
+3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >> endobj
+4 0 obj << /Length 3500 >> stream
+BT /F1 24 Tf 50 750 Td (HackOn with Amazon - VidyarthiCompanion) Tj 0 -40 Td /F1 14 Tf (Team: QuantYap) Tj 0 -20 Td /F1 11 Tf (Hackathon Theme: AI for Campus, Community & Everyday Life) Tj 0 -15 Td (Date: 15-06-2026) Tj 0 -40 Td (TEAM MEMBERS) Tj 0 -20 Td /F1 10 Tf (Soneesh Kumar Srivastava - BIT Mesra - Backend Dev) Tj 0 -15 Td (Aditya Singh Chandel - IIIT Lucknow - Frontend Dev) Tj 0 -15 Td (Abhinav Sahu - BIT Mesra - ML / AI Engineer) Tj 0 -40 Td /F1 12 Tf (PROBLEM STATEMENT) Tj 0 -20 Td /F1 10 Tf (250+ million university students face Fragmented Operational Deficit) Tj 0 -12 Td (Waste ~200 hours annually reconciling outdated portals) Tj 0 -12 Td (Chaotic, unverified information across multiple channels) Tj 0 -40 Td /F1 12 Tf (KEY FEATURES) Tj 0 -20 Td /F1 10 Tf (1. Verified Override Engine - AI OCR with consensus voting) Tj 0 -15 Td (2. Empathy Mesh - Proactive wellness safety net) Tj 0 -15 Td (3. Community Graph - Multi-tiered social architecture) Tj 0 -15 Td (4. PocketBuddy - Context-aware micro-budgeting) Tj 0 -15 Td (5. Dynamic Routine Engine - Autonomous schedule management) Tj 0 -40 Td /F1 12 Tf (TECH STACK) Tj 0 -20 Td /F1 10 Tf (Frontend: Next.js 16, React 19, Tailwind v4, Zustand) Tj 0 -15 Td (Backend: Node.js, Express 5, JWT, bcrypt) Tj 0 -15 Td (Database: MongoDB, Mongoose 9) Tj 0 -15 Td (AI: Google Gemini 2.5 Flash | Amazon Bedrock Ready) Tj 0 -15 Td (Payments: Amazon Pay Integration Ready) Tj 0 -40 Td /F1 12 Tf (ROADMAP) Tj 0 -20 Td /F1 10 Tf (0-3 months: Campus Anchor MVP Launch) Tj 0 -15 Td (3-6 months: Live APIs & HealthKit Integration) Tj 0 -15 Td (6-12 months: Enterprise B2B Analytics Dashboard) Tj 0 -40 Td /F1 12 Tf (IMPACT METRICS) Tj 0 -20 Td /F1 10 Tf (25M active users within 3 years) Tj 0 -15 Td (5 billion hours reclaimed annually) Tj 0 -15 Td (10-20% monthly savings per student) Tj 0 -15 Td (10-15% reduction in burnout-related attrition) Tj 0 -15 Td (50B+ Gen-Z daily spending market capture) Tj 0 -40 Td /F1 10 Tf (GitHub: https://github.com/timey07/VidyarthiCompanion) Tj
+ET
+endstream endobj
+5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000244 00000 n 
+0000003795 00000 n 
+trailer << /Size 6 /Root 1 0 R >> startxref 3874 %%EOF
