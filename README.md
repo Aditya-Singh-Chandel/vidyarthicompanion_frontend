@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🖥 VidyarthiCompanion — Frontend (Production)
 
@@ -83,4 +83,3 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
 *Built by Team QuantYap for HackOn with Amazon 2026*
 
 </div>
-]]>
