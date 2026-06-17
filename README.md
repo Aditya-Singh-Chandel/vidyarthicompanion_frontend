@@ -15,9 +15,9 @@
 
 ## 📖 Overview
 
-This is the **production-ready** variant of the VidyarthiCompanion frontend, configured to connect to a **cloud-hosted MongoDB Atlas** backend. The codebase is identical to [`VidyarthiCompanion-frontend`](../VidyarthiCompanion-frontend/README.md) — the only difference is the environment configuration pointing to the deployed backend.
+This is the **production-ready** variant of the VidyarthiCompanion frontend, configured to connect to a **cloud-hosted MongoDB Atlas** backend. The codebase is identical to VidyarthiCompanion-frontend — the only difference is the environment configuration pointing to the deployed backend.
 
-> For comprehensive documentation on the project structure, pages, components, feature modules, and state management, refer to the **[VidyarthiCompanion-frontend README](../VidyarthiCompanion-frontend/README.md)**.
+> For comprehensive documentation on the project structure, pages, components, feature modules, and state management, refer to the **VidyarthiCompanion-frontend README**.
 
 ---
 
@@ -70,15 +70,15 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
 
 ## 🔗 Related
 
-- **[Root README](../README.md)** — Full project overview and architecture
-- **[VidyarthiCompanion-frontend README](../VidyarthiCompanion-frontend/README.md)** — Detailed frontend documentation (identical codebase)
-- **[github-backend README](../github-backend/README.md)** — Production backend API
+- **Root README** — Full project overview and architecture
+- **VidyarthiCompanion-frontend README** — Detailed frontend documentation (identical codebase)
+- **github-backend README** — Production backend API
 
 ---
 
 <div align="center">
 
-**Part of the [VidyarthiCompanion](../README.md) Campus OS**
+**Part of the VidyarthiCompanion Campus OS**
 
 *Built by Team QuantYap for HackOn with Amazon 2026*
 
