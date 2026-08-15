@@ -56,7 +56,7 @@ export default function Footer() {
         </div>
       </div>
       <p className="mx-auto mt-10 max-w-6xl text-center text-xs text-[var(--text-secondary)]">
-        VidyarthiCompanion · Aurora Design System · Built for Amazon Hackon
+        VidyarthiCompanion · Aurora Design System
       </p>
     </footer>
   );

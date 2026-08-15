@@ -80,6 +80,6 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
 
 **Part of the VidyarthiCompanion Campus OS**
 
-*Built by Team QuantYap for HackOn with Amazon 2026*
+*Built by Team QuantYap*
 
 </div>

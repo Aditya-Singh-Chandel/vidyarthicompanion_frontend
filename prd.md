@@ -1,4 +1,4 @@
-# HackOn with Amazon
+# VidyarthiCompanion
 ## A Universe of Opportunity
 *48-Hour Hackathon  |  Solution Document*
 
@@ -22,7 +22,7 @@
 ---
 ---
 
-*HackOn with Amazon | Solution Document*
+*Solution Document*
 
 ## 1. Problem Statement & Relevance
 
@@ -79,7 +79,7 @@ Existing applications are fundamentally fragmented, focusing on either productiv
 ---
 ---
 
-*HackOn with Amazon | Solution Document*
+*Solution Document*
 
 ## 2. Customer & Solution
 
@@ -158,7 +158,7 @@ Dashboard Window of the user
 ---
 ---
 
-*HackOn with Amazon | Solution Document*
+*Solution Document*
 
 ## 3. Tech Architecture & Scaling
 
@@ -203,7 +203,7 @@ Stateless Express engines scale horizontally behind a load balancer; MongoDB sha
 ---
 ---
 
-*HackOn with Amazon | Solution Document*
+*Solution Document*
 
 ## 4. Future Vision
 

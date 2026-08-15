@@ -94,7 +94,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <p className="text-xs text-white/50">Built for Amazon Hackon · Aurora Design System</p>
+          <p className="text-xs text-white/50">Aurora Design System</p>
         </div>
       </aside>
 
